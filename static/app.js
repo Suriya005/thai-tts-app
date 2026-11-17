@@ -11,7 +11,7 @@ const PRESETS = [
   "เด็กๆ วิ่งเล่นกันสนุกสนานมากๆ ในวันหยุดสุดสัปดาห์นี้",
   "สวัสดีค่ะ มีบริการอะไรให้ช่วยเหลือเพิ่มเติมไหมคะ ยินดีให้บริการค่ะ",
   "ยินดีต้อนรับเจ้า วันนี้อากาศดีขนาด กิ๋นข้าวแลงแล้วกา ลำแต้ๆ เน้อ",
-  "ยินดีต้อนรับเด้อครับ สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อ",
+  "ยินดีต้อนรับเด้อจ้า สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อ",
   "สวัสดีพี่น้องชาวใต้ หรอยจังฮู้ วันนี้ไปทำไหรมามั่ง แหลงใต้ชัดเจน",
   "สวัสดีจ้ะพ่อแม่พี่น้อง วันนี้มาเจอกันอีกแล้วนะจ๊ะ สนุกสนานกันใหญ่เลยจ้ะ"
 ];
@@ -151,6 +151,37 @@ async function autoTranslateToKhamMueang() {
   }
 }
 
+async function autoTranslateToIsan() {
+  const textarea = document.getElementById("input-text");
+  const text = (textarea.value || "").trim();
+  if (!text) {
+    alert("กรุณาพิมพ์หรือเลือกข้อความภาษาไทยก่อน แล้วกดแปลงเป็นภาษาอีสานครับ");
+    return;
+  }
+  try {
+    const res = await fetch("/api/convert_isan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, gender: "female" })
+    });
+    if (!res.ok) throw new Error("ไม่สามารถแปลงข้อความเป็นภาษาอีสานได้");
+    const data = await res.json();
+    if (data.isan) {
+      textarea.value = data.isan;
+      updateCharCount();
+      // Auto select Isan engine & female voice
+      selectEngine("meta_mms");
+      const vs = document.getElementById("select-voice");
+      if (vs) vs.value = "mms_isan_female";
+      // Visual flash feedback
+      textarea.classList.add("ring-2", "ring-amber-500");
+      setTimeout(() => textarea.classList.remove("ring-2", "ring-amber-500"), 500);
+    }
+  } catch (err) {
+    alert("เกิดข้อผิดพลาดในการแปลงข้อความ: " + err.message);
+  }
+}
+
 function setupSliders() {
   const speed = document.getElementById("param-speed");
   const speedVal = document.getElementById("speed-val");
@@ -281,7 +312,9 @@ async function startSingleSynthesis() {
         voice,
         speed,
         volume,
-        noise_scale: noiseScale
+        noise_scale: noiseScale,
+        auto_khammueang: voice.startsWith("mms_nod"),
+        auto_isan: voice.startsWith("mms_isan")
       })
     });
 

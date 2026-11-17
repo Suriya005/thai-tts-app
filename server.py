@@ -43,6 +43,7 @@ class SynthesizeRequest(BaseModel):
     volume: float = 1.0
     noise_scale: float = 0.667
     auto_khammueang: Optional[bool] = False
+    auto_isan: Optional[bool] = False
 
 class ConvertRequest(BaseModel):
     text: str
@@ -143,7 +144,7 @@ def get_models():
         ]
     }
 
-async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0, volume: float = 1.0, noise_scale: float = 0.667, auto_khammueang: bool = False) -> Dict[str, Any]:
+async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0, volume: float = 1.0, noise_scale: float = 0.667, auto_khammueang: bool = False, auto_isan: bool = False) -> Dict[str, Any]:
     file_id = str(uuid.uuid4())[:12]
     clean_text = text.strip()
     if not clean_text:
@@ -160,6 +161,10 @@ async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0
             import khammueang_converter
             target_gender = "male" if "male" in voice else "female"
             clean_text = khammueang_converter.to_khammueang(clean_text, gender=target_gender)
+        elif voice.startswith("mms_isan") and auto_isan:
+            import isan_converter
+            target_gender = "male" if "male" in voice else "female"
+            clean_text = isan_converter.to_isan(clean_text, gender=target_gender)
         await asyncio.to_thread(
             dialect_engine.synthesize_dialect,
             dialect_id=voice,
@@ -250,6 +255,12 @@ def api_convert_khammueang(req: ConvertRequest):
     converted = khammueang_converter.to_khammueang(req.text, gender=req.gender or "female")
     return {"original": req.text, "khammueang": converted}
 
+@app.post("/api/convert_isan")
+def api_convert_isan(req: ConvertRequest):
+    import isan_converter
+    converted = isan_converter.to_isan(req.text, gender=req.gender or "female")
+    return {"original": req.text, "isan": converted}
+
 @app.post("/api/synthesize")
 async def api_synthesize(req: SynthesizeRequest):
     try:
@@ -260,7 +271,8 @@ async def api_synthesize(req: SynthesizeRequest):
             speed=req.speed,
             volume=req.volume,
             noise_scale=req.noise_scale,
-            auto_khammueang=req.auto_khammueang or False
+            auto_khammueang=req.auto_khammueang or False,
+            auto_isan=req.auto_isan or False
         )
         return res
     except Exception as e:
@@ -271,9 +283,9 @@ async def api_synthesize(req: SynthesizeRequest):
 async def api_compare(req: CompareRequest):
     targets = req.targets or [
         {"engine": "meta_mms", "voice": "mms_nod_female", "label": "🌸 Meta MMS (คำเมือง เหนือ - หญิง)"},
-        {"engine": "meta_mms", "voice": "mms_nod_male", "label": "🌸 Meta MMS (คำเมือง เหนือ - ชาย)"},
+        {"engine": "meta_mms", "voice": "mms_isan_female", "label": "🌾 Meta MMS (ภาษาอีสาน - หญิง)"},
+        {"engine": "meta_mms", "voice": "mms_isan_male", "label": "🌾 Meta MMS (ภาษาอีสาน - ชาย)"},
         {"engine": "vachanatts", "voice": "th_f_2", "label": "VachanaTTS (หญิง 2 - สมดุล/CER ต่ำ)"},
-        {"engine": "vachanatts", "voice": "th_m_1", "label": "VachanaTTS (ชาย 1 - พอดแคสต์/ทุ้ม)"},
         {"engine": "edge", "voice": "th-TH-PremwadeeNeural", "label": "Edge Neural (คุณเปรมวดี - หญิง)"},
         {"engine": "edge", "voice": "th-TH-NiwatNeural", "label": "Edge Neural (คุณนิวัฒน์ - ชาย)"}
     ]

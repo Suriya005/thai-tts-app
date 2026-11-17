@@ -154,12 +154,12 @@
           <p class="text-xs text-slate-400 truncate mt-1">ยินดีต้อนรับเจ้า วันนี้อากาศดีขนาด กิ๋นข้าวแลงแล้วกา ลำแต้ๆ</p>
         </button>
 
-        <button onclick="applyPreset(7, this)" data-text="ยินดีต้อนรับเด้อครับ สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลี" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-amber-500/50 transition-all group">
+        <button onclick="applyPreset(7, this)" data-text="ยินดีต้อนรับเด้อจ้า สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อ" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-amber-500/50 transition-all group">
           <div class="flex items-center justify-between text-xs font-medium text-amber-300 group-hover:text-amber-200">
             <span>🌾 ภาษาอีสาน (คำเว้าอีสาน)</span>
             <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
           </div>
-          <p class="text-xs text-slate-400 truncate mt-1">ยินดีต้อนรับเด้อครับ สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลี</p>
+          <p class="text-xs text-slate-400 truncate mt-1">ยินดีต้อนรับเด้อจ้า สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อ</p>
         </button>
 
         <button onclick="applyPreset(8, this)" data-text="สวัสดีพี่น้องชาวใต้ หรอยจังฮู้ วันนี้ไปทำไหรมามั่ง แหลงใต้ชัดเจน" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-cyan-500/50 transition-all group">
@@ -192,15 +192,23 @@
                 <i data-lucide="edit-3" class="w-4 h-4 text-indigo-400"></i>
                 ข้อความภาษาไทยที่ต้องการสังเคราะห์
               </label>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <button type="button" onclick="autoTranslateToKhamMueang()" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-pink-950/80 text-pink-300 border border-pink-700/50 hover:bg-pink-900 transition-all flex items-center gap-1.5 shadow-sm" title="แปลงประโยคภาษากลางเป็นสำเนียงคำเมืองอัตโนมัติ">
                   <i data-lucide="sparkles" class="w-3.5 h-3.5 text-pink-400"></i>
-                  <span>🪄 แปลงเป็นคำเมือง (ไทย ➔ เหนือ)</span>
+                  <span>🪄 แปลงเป็นคำเมือง (เหนือ)</span>
                 </button>
-                <a href="/api/audio/ref_female_khammueang.wav" target="_blank" class="px-2 py-1 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:text-white transition-all flex items-center gap-1" title="ฟังคลิปเสียงต้นแบบผู้หญิงชาวเหนือ 16 วินาที">
-                  <i data-lucide="volume-2" class="w-3.5 h-3.5 text-indigo-400"></i>
-                  <span>เสียงต้นแบบ</span>
-                </a>
+                <button type="button" onclick="autoTranslateToIsan()" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-950/80 text-amber-300 border border-amber-700/50 hover:bg-amber-900 transition-all flex items-center gap-1.5 shadow-sm" title="แปลงประโยคภาษากลางเป็นภาษาอีสานอัตโนมัติ">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                  <span>🪄 แปลงเป็นภาษาอีสาน</span>
+                </button>
+                <div class="flex items-center gap-1.5 text-[11px] text-slate-400 border border-slate-700/60 rounded-lg px-2 py-0.5 bg-slate-800/40">
+                  <span>เสียงต้นแบบ:</span>
+                  <a href="/api/audio/ref_female_khammueang.wav" target="_blank" class="text-pink-400 hover:underline" title="เสียงต้นแบบสาวเหนือ 16 วินาที">เหนือ</a>
+                  <span>•</span>
+                  <a href="/api/audio/ref_female_isan.wav" target="_blank" class="text-amber-400 hover:underline" title="เสียงต้นแบบสาวอีสาน WiriWiri 20 วินาที">อีสาน(ญ)</a>
+                  <span>•</span>
+                  <a href="/api/audio/ref_male_isan.wav" target="_blank" class="text-sky-400 hover:underline" title="เสียงต้นแบบหนุ่มอีสาน 20 วินาที">อีสาน(ช)</a>
+                </div>
                 <span id="char-counter" class="text-xs text-slate-500">0 ตัวอักษร</span>
               </div>
             </div>
@@ -631,6 +639,6 @@
 
   </main>
 
-  <script src="/app.js?v=20261118_0405"></script>
+  <script src="/app.js?v=20261118_0418"></script>
 </body>
 </html>
