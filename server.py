@@ -79,11 +79,14 @@ def get_models():
                 "name": "Meta MMS (สำเนียงถิ่นไทย / Regional Dialects)",
                 "type": "local",
                 "badge": "Regional Dialects",
-                "description": "โมเดล VITS สำเนียงท้องถิ่นจาก Meta Massively Multilingual Speech (คำเมือง/เหนือ, อีสาน, ไทยกลาง)",
+                "description": "โมเดล VITS สำเนียงท้องถิ่นจาก Meta Massively Multilingual Speech พร้อมโทนเสียงหญิงหวานธรรมชาติ (DSP) และเสียงชาย",
                 "voices": [
-                    {"id": "mms_nod", "name": "🌸 ภาษาเหนือ (คำเมือง / Lanna) - facebook/mms-tts-nod", "gender": "neutral"},
-                    {"id": "mms_isan", "name": "🌾 ภาษาอีสาน (Isan / Lao Phonology) - facebook/mms-tts-lao + Script Bridge", "gender": "neutral"},
-                    {"id": "mms_tha", "name": "🏛️ ภาษาไทยกลาง (Central Thai - MMS) - facebook/mms-tts-tha", "gender": "neutral"}
+                    {"id": "mms_nod_female", "name": "🌸 ภาษาเหนือ (คำเมือง - เสียงหญิง)", "gender": "female"},
+                    {"id": "mms_nod_male", "name": "🌸 ภาษาเหนือ (คำเมือง - เสียงชาย)", "gender": "male"},
+                    {"id": "mms_isan_female", "name": "🌾 ภาษาอีสาน (สำเนียงลาว - เสียงหญิง)", "gender": "female"},
+                    {"id": "mms_isan_male", "name": "🌾 ภาษาอีสาน (สำเนียงลาว - เสียงชาย)", "gender": "male"},
+                    {"id": "mms_tha_female", "name": "🏛️ ภาษาไทยกลาง (MMS - เสียงหญิง)", "gender": "female"},
+                    {"id": "mms_tha_male", "name": "🏛️ ภาษาไทยกลาง (MMS - เสียงชาย)", "gender": "male"}
                 ],
                 "controls": {"speed": True, "volume": False, "noise_scale": False}
             },
@@ -153,9 +156,10 @@ async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0
 
     if engine == "meta_mms":
         import dialect_engine
-        if voice == "mms_nod" and auto_khammueang:
+        if voice.startswith("mms_nod") and auto_khammueang:
             import khammueang_converter
-            clean_text = khammueang_converter.to_khammueang(clean_text, gender="female")
+            target_gender = "male" if "male" in voice else "female"
+            clean_text = khammueang_converter.to_khammueang(clean_text, gender=target_gender)
         await asyncio.to_thread(
             dialect_engine.synthesize_dialect,
             dialect_id=voice,
@@ -266,12 +270,12 @@ async def api_synthesize(req: SynthesizeRequest):
 @app.post("/api/compare")
 async def api_compare(req: CompareRequest):
     targets = req.targets or [
+        {"engine": "meta_mms", "voice": "mms_nod_female", "label": "🌸 Meta MMS (คำเมือง เหนือ - หญิง)"},
+        {"engine": "meta_mms", "voice": "mms_nod_male", "label": "🌸 Meta MMS (คำเมือง เหนือ - ชาย)"},
         {"engine": "vachanatts", "voice": "th_f_2", "label": "VachanaTTS (หญิง 2 - สมดุล/CER ต่ำ)"},
         {"engine": "vachanatts", "voice": "th_m_1", "label": "VachanaTTS (ชาย 1 - พอดแคสต์/ทุ้ม)"},
-        {"engine": "pythaitts", "voice": "fastthaig2p", "label": "PyThaiTTS (Kokoro-82M Thai)"},
-        {"engine": "pythaitts", "voice": "makham_paradee", "label": "PyThaiTTS (MakHam Paradee ~8MB)"},
-        {"engine": "edge", "voice": "th-TH-NiwatNeural", "label": "Edge Neural (คุณนิวัฒน์)"},
-        {"engine": "gtts", "voice": "th", "label": "Google TTS (Standard Baseline)"}
+        {"engine": "edge", "voice": "th-TH-PremwadeeNeural", "label": "Edge Neural (คุณเปรมวดี - หญิง)"},
+        {"engine": "edge", "voice": "th-TH-NiwatNeural", "label": "Edge Neural (คุณนิวัฒน์ - ชาย)"}
     ]
 
     async def _safe_gen(target):

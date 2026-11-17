@@ -21,3 +21,4 @@ torch>=2.2.0
 transformers>=4.40.0
 huggingface-hub>=0.22.0
 onnxruntime>=1.17.0
+pedalboard>=0.9.20

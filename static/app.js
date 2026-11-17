@@ -107,11 +107,11 @@ function applyPreset(index, btnElem = null) {
   if (index === 6 && modelsData) { // Northern Thai
     selectEngine('meta_mms');
     const vs = document.getElementById("select-voice");
-    if (vs) vs.value = "mms_nod";
+    if (vs) vs.value = "mms_nod_female";
   } else if (index === 7 && modelsData) { // Isan
     selectEngine('meta_mms');
     const vs = document.getElementById("select-voice");
-    if (vs) vs.value = "mms_isan";
+    if (vs) vs.value = "mms_isan_female";
   }
 }
 
@@ -138,10 +138,10 @@ async function autoTranslateToKhamMueang() {
     if (data.khammueang) {
       textarea.value = data.khammueang;
       updateCharCount();
-      // Auto select Northern Thai engine
+      // Auto select Northern Thai engine & female voice
       selectEngine("meta_mms");
       const vs = document.getElementById("select-voice");
-      if (vs) vs.value = "mms_nod";
+      if (vs) vs.value = "mms_nod_female";
       // Visual flash feedback
       textarea.classList.add("ring-2", "ring-pink-500");
       setTimeout(() => textarea.classList.remove("ring-2", "ring-pink-500"), 500);
@@ -230,7 +230,8 @@ function selectEngine(engineId) {
   engine.voices.forEach(v => {
     const opt = document.createElement("option");
     opt.value = v.id;
-    opt.textContent = `${v.name} (${v.gender === 'female' ? '👩 หญิง' : '👨 ชาย'})`;
+    const genderBadge = v.gender === 'female' ? '👩 หญิง' : (v.gender === 'male' ? '👨 ชาย' : '🗣️ กลาง');
+    opt.textContent = `${v.name} [${genderBadge}]`;
     voiceSelect.appendChild(opt);
   });
 
