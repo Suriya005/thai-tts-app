@@ -76,6 +76,18 @@ def get_models():
     return {
         "engines": [
             {
+                "id": "isan_trained",
+                "name": "🔥 โมเดลเสียงอีสานแท้ (เทรนจาก YouTube)",
+                "type": "local",
+                "badge": "YouTube Trained",
+                "description": "โมเดลเสียงภาษาอีสานแท้เทรนจากคลิปยูทูปคนอีสานจริง (สาวอีสาน: น้องครีม & WiriWiri, หนุ่มอีสาน: พี่หนุ่ย & ไทบ้าน) ชัดถ้อยชัดคำ ม่วนซื่นเป็นธรรมชาติ",
+                "voices": [
+                    {"id": "isan_female_trained", "name": "🌸 สาวอีสานแท้ (น้องครีม & WiriWiri)", "gender": "female"},
+                    {"id": "isan_male_trained", "name": "🌾 หนุ่มอีสานแท้ (พี่หนุ่ย & ไทบ้าน)", "gender": "male"}
+                ],
+                "controls": {"speed": True, "volume": True, "noise_scale": False}
+            },
+            {
                 "id": "meta_mms",
                 "name": "Meta MMS (สำเนียงถิ่นไทย / Regional Dialects)",
                 "type": "local",
@@ -155,15 +167,29 @@ async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0
     out_filename = f"{engine}_{voice}_{file_id}.{out_ext}"
     out_path = OUTPUT_DIR / out_filename
 
-    if engine == "meta_mms":
+    if engine == "isan_trained":
+        import isan_voice_engine
+        import isan_converter
+        target_gender = "female" if "female" in voice else "male"
+        clean_text = isan_converter.to_isan(clean_text, gender=target_gender)
+        await asyncio.to_thread(
+            isan_voice_engine.synthesize_trained_isan,
+            text=clean_text,
+            voice_id=voice,
+            out_path=str(out_path),
+            speed=speed,
+            volume=volume,
+            auto_translate=False
+        )
+    elif engine == "meta_mms":
         import dialect_engine
         if voice.startswith("mms_nod") and auto_khammueang:
             import khammueang_converter
-            target_gender = "male" if "male" in voice else "female"
+            target_gender = "female" if "female" in voice else "male"
             clean_text = khammueang_converter.to_khammueang(clean_text, gender=target_gender)
         elif voice.startswith("mms_isan") and auto_isan:
             import isan_converter
-            target_gender = "male" if "male" in voice else "female"
+            target_gender = "female" if "female" in voice else "male"
             clean_text = isan_converter.to_isan(clean_text, gender=target_gender)
         await asyncio.to_thread(
             dialect_engine.synthesize_dialect,
@@ -282,9 +308,9 @@ async def api_synthesize(req: SynthesizeRequest):
 @app.post("/api/compare")
 async def api_compare(req: CompareRequest):
     targets = req.targets or [
+        {"engine": "isan_trained", "voice": "isan_female_trained", "label": "🔥 สาวอีสานแท้ (เทรนจาก YouTube - หญิง)"},
+        {"engine": "isan_trained", "voice": "isan_male_trained", "label": "🔥 หนุ่มอีสานแท้ (เทรนจาก YouTube - ชาย)"},
         {"engine": "meta_mms", "voice": "mms_nod_female", "label": "🌸 Meta MMS (คำเมือง เหนือ - หญิง)"},
-        {"engine": "meta_mms", "voice": "mms_isan_female", "label": "🌾 Meta MMS (ภาษาอีสาน - หญิง)"},
-        {"engine": "meta_mms", "voice": "mms_isan_male", "label": "🌾 Meta MMS (ภาษาอีสาน - ชาย)"},
         {"engine": "vachanatts", "voice": "th_f_2", "label": "VachanaTTS (หญิง 2 - สมดุล/CER ต่ำ)"},
         {"engine": "edge", "voice": "th-TH-PremwadeeNeural", "label": "Edge Neural (คุณเปรมวดี - หญิง)"},
         {"engine": "edge", "voice": "th-TH-NiwatNeural", "label": "Edge Neural (คุณนิวัฒน์ - ชาย)"}

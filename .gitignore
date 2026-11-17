@@ -17,6 +17,7 @@ __pycache__/
 # Audio Outputs & Temp Files
 output/*
 !output/.gitkeep
+training_data/
 tmp_*
 *.wav
 *.mp3

@@ -109,9 +109,9 @@ function applyPreset(index, btnElem = null) {
     const vs = document.getElementById("select-voice");
     if (vs) vs.value = "mms_nod_female";
   } else if (index === 7 && modelsData) { // Isan
-    selectEngine('meta_mms');
+    selectEngine('isan_trained');
     const vs = document.getElementById("select-voice");
-    if (vs) vs.value = "mms_isan_female";
+    if (vs) vs.value = "isan_female_trained";
   }
 }
 
@@ -169,10 +169,10 @@ async function autoTranslateToIsan() {
     if (data.isan) {
       textarea.value = data.isan;
       updateCharCount();
-      // Auto select Isan engine & female voice
-      selectEngine("meta_mms");
+      // Auto select YouTube-trained Isan engine & female voice
+      selectEngine("isan_trained");
       const vs = document.getElementById("select-voice");
-      if (vs) vs.value = "mms_isan_female";
+      if (vs) vs.value = "isan_female_trained";
       // Visual flash feedback
       textarea.classList.add("ring-2", "ring-amber-500");
       setTimeout(() => textarea.classList.remove("ring-2", "ring-amber-500"), 500);
