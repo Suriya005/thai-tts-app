@@ -120,6 +120,37 @@ function updateCharCount() {
   document.getElementById("char-counter").textContent = `${val.length} ตัวอักษร`;
 }
 
+async function autoTranslateToKhamMueang() {
+  const textarea = document.getElementById("input-text");
+  const text = (textarea.value || "").trim();
+  if (!text) {
+    alert("กรุณาพิมพ์หรือเลือกข้อความภาษาไทยก่อน แล้วกดแปลงเป็นคำเมืองครับ");
+    return;
+  }
+  try {
+    const res = await fetch("/api/convert_khammueang", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, gender: "female" })
+    });
+    if (!res.ok) throw new Error("ไม่สามารถแปลงข้อความเป็นคำเมืองได้");
+    const data = await res.json();
+    if (data.khammueang) {
+      textarea.value = data.khammueang;
+      updateCharCount();
+      // Auto select Northern Thai engine
+      selectEngine("meta_mms");
+      const vs = document.getElementById("select-voice");
+      if (vs) vs.value = "mms_nod";
+      // Visual flash feedback
+      textarea.classList.add("ring-2", "ring-pink-500");
+      setTimeout(() => textarea.classList.remove("ring-2", "ring-pink-500"), 500);
+    }
+  } catch (err) {
+    alert("เกิดข้อผิดพลาดในการแปลงข้อความ: " + err.message);
+  }
+}
+
 function setupSliders() {
   const speed = document.getElementById("param-speed");
   const speedVal = document.getElementById("speed-val");

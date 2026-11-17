@@ -37,11 +37,16 @@ app.add_middleware(
 
 class SynthesizeRequest(BaseModel):
     text: str
-    engine: str = "vachanatts" # vachanatts, pythaitts, edge, gtts
+    engine: str = "vachanatts" # vachanatts, pythaitts, edge, gtts, meta_mms
     voice: Optional[str] = "th_f_2"
     speed: float = 1.0
     volume: float = 1.0
     noise_scale: float = 0.667
+    auto_khammueang: Optional[bool] = False
+
+class ConvertRequest(BaseModel):
+    text: str
+    gender: Optional[str] = "female"
 
 class CompareRequest(BaseModel):
     text: str
@@ -135,7 +140,7 @@ def get_models():
         ]
     }
 
-async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0, volume: float = 1.0, noise_scale: float = 0.667) -> Dict[str, Any]:
+async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0, volume: float = 1.0, noise_scale: float = 0.667, auto_khammueang: bool = False) -> Dict[str, Any]:
     file_id = str(uuid.uuid4())[:12]
     clean_text = text.strip()
     if not clean_text:
@@ -148,6 +153,9 @@ async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0
 
     if engine == "meta_mms":
         import dialect_engine
+        if voice == "mms_nod" and auto_khammueang:
+            import khammueang_converter
+            clean_text = khammueang_converter.to_khammueang(clean_text, gender="female")
         await asyncio.to_thread(
             dialect_engine.synthesize_dialect,
             dialect_id=voice,
@@ -232,6 +240,12 @@ async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0
 
     return result
 
+@app.post("/api/convert_khammueang")
+def api_convert_khammueang(req: ConvertRequest):
+    import khammueang_converter
+    converted = khammueang_converter.to_khammueang(req.text, gender=req.gender or "female")
+    return {"original": req.text, "khammueang": converted}
+
 @app.post("/api/synthesize")
 async def api_synthesize(req: SynthesizeRequest):
     try:
@@ -241,7 +255,8 @@ async def api_synthesize(req: SynthesizeRequest):
             text=req.text,
             speed=req.speed,
             volume=req.volume,
-            noise_scale=req.noise_scale
+            noise_scale=req.noise_scale,
+            auto_khammueang=req.auto_khammueang or False
         )
         return res
     except Exception as e:
