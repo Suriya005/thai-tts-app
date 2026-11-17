@@ -1,0 +1,23 @@
+# Thai TTS Benchmark Studio & Regional Dialect Engine
+# Python 3.10+ / 3.11 recommended
+
+# Web & API Server
+fastapi>=0.110.0
+uvicorn>=0.28.0
+python-multipart>=0.0.9
+pydantic>=2.6.0
+soundfile>=0.12.1
+scipy>=1.12.0
+
+# Local & Cloud Thai TTS Engines
+vachanatts>=0.0.7
+pythaitts>=1.0.0
+pythainlp>=5.0.0
+edge-tts>=6.1.12
+gtts>=2.5.1
+
+# Meta MMS Dialects & Transformers (CPU / CUDA)
+torch>=2.2.0
+transformers>=4.40.0
+huggingface-hub>=0.22.0
+onnxruntime>=1.17.0

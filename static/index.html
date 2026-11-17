@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thai TTS Benchmark & Testing Studio</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Sarabun & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Sarabun', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/style.css?v=20261118_0310">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+  
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/70 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+          <i data-lucide="volume-2" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-indigo-400">
+            Thai TTS Benchmark Studio
+          </h1>
+          <p class="text-xs text-slate-400">สตูดิโอทดสอบและเปรียบเทียบเสียงสังเคราะห์ภาษาไทยคุณภาพสูง</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-300 font-medium" id="system-status-badge">5 Engines Ready</span>
+        </div>
+        <a href="#guide" onclick="switchTab('guide')" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors" title="คู่มือและสถาปัตยกรรมโมเดล">
+          <i data-lucide="book-open" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Mode Selector Tabs -->
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="flex space-x-2">
+        <button id="tab-btn-single" onclick="switchTab('single')" class="tab-btn active px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all bg-indigo-600 text-white shadow-lg shadow-indigo-500/20">
+          <i data-lucide="sliders" class="w-4 h-4"></i>
+          โหมดทดสอบรายโมเดล (Playground)
+        </button>
+        <button id="tab-btn-compare" onclick="switchTab('compare')" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white">
+          <i data-lucide="git-compare" class="w-4 h-4"></i>
+          โหมดเทียบเสียงพร้อมกัน (Compare Matrix)
+        </button>
+        <button id="tab-btn-guide" onclick="switchTab('guide')" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white">
+          <i data-lucide="info" class="w-4 h-4"></i>
+          สรุปการวิจัยและโมเดลใหญ่ (OmniVoice / F5 / JaiTTS)
+        </button>
+      </div>
+      <div class="text-xs text-slate-500 hidden md:block">
+        VachanaTTS (ONNX) • PyThaiTTS • Kokoro-82M • Edge Neural
+      </div>
+    </div>
+
+    <!-- Thai Linguistic Presets (Always visible on top of testing) -->
+    <div id="presets-card" class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+          <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">ชุดประโยคทดสอบความท้าทายภาษาไทย (Test Presets)</span>
+        </div>
+        <span class="text-xs text-slate-500">คลิกเพื่อใส่ข้อความทดสอบทันที</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <button onclick="applyPreset(0, this)" data-text="โรงเรียนของเราน่าอยู่ คุณครูใจดีทุกคน รถไฟสายตะวันออกแล่นเร็วมาก" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-indigo-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-indigo-300 group-hover:text-indigo-200">
+            <span>🗣️ สำเนียงพยัญชนะ "ร" และ "ล"</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">โรงเรียนของเราน่าอยู่ คุณครูใจดีทุกคน รถไฟสายตะวันออกแล่นเร็วมาก</p>
+        </button>
+
+        <button onclick="applyPreset(1, this)" data-text="วันที่ 15 พฤศจิกายน 2569 เวลา 14:30 น. ราคา 1,250.50 บาท" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-indigo-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-amber-300 group-hover:text-amber-200">
+            <span>🔢 ตัวเลข วันที่ และเวลา</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">วันที่ 15 พฤศจิกายน 2569 เวลา 14:30 น. ราคา 1,250.50 บาท</p>
+        </button>
+
+        <button onclick="applyPreset(2, this)" data-text="วันนี้เรามี meeting สำคัญตอนเช้า และอย่าลืม update status ใน presentation ด้วยนะ" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-indigo-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-emerald-300 group-hover:text-emerald-200">
+            <span>🌐 คำทับศัพท์อังกฤษ (Code-Switching)</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">วันนี้เรามี meeting สำคัญตอนเช้า และอย่าลืม update status ใน presentation ด้วยนะ</p>
+        </button>
+
+        <button onclick="applyPreset(3, this)" data-text="สวัสดีครับ ยินดีต้อนรับสู่รายการพอดแคสต์เพื่อการเรียนรู้เทคโนโลยี AI ยุคใหม่" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-indigo-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-purple-300 group-hover:text-purple-200">
+            <span>🎙️ พอดแคสต์และข่าวสาร (Narrative)</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">สวัสดีครับ ยินดีต้อนรับสู่รายการพอดแคสต์เพื่อการเรียนรู้เทคโนโลยี AI ยุคใหม่</p>
+        </button>
+
+        <button onclick="applyPreset(4, this)" data-text="เด็กๆ วิ่งเล่นกันสนุกสนานมากๆ ในวันหยุดสุดสัปดาห์นี้" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-indigo-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-rose-300 group-hover:text-rose-200">
+            <span>🔁 ไม้ยมก (ๆ) และคำซ้ำ</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">เด็กๆ วิ่งเล่นกันสนุกสนานมากๆ ในวันหยุดสุดสัปดาห์นี้</p>
+        </button>
+
+        <button onclick="applyPreset(5, this)" data-text="สวัสดีค่ะ มีบริการอะไรให้ช่วยเหลือเพิ่มเติมไหมคะ ยินดีให้บริการค่ะ" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-indigo-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-sky-300 group-hover:text-sky-200">
+            <span>💬 บทสนทนาการบริการ</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">สวัสดีค่ะ มีบริการอะไรให้ช่วยเหลือเพิ่มเติมไหมคะ ยินดีให้บริการค่ะ</p>
+        </button>
+
+        <button onclick="applyPreset(6, this)" data-text="ยินดีต้อนรับเจ้า วันนี้อากาศดีขนาด กิ๋นข้าวแลงแล้วกา ลำแต้ๆ" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-pink-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-pink-300 group-hover:text-pink-200">
+            <span>🌸 ภาษาเหนือ (คำเมือง)</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">ยินดีต้อนรับเจ้า วันนี้อากาศดีขนาด กิ๋นข้าวแลงแล้วกา ลำแต้ๆ</p>
+        </button>
+
+        <button onclick="applyPreset(7, this)" data-text="ยินดีต้อนรับเด้อครับ สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลี" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-amber-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-amber-300 group-hover:text-amber-200">
+            <span>🌾 ภาษาอีสาน (คำเว้าอีสาน)</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">ยินดีต้อนรับเด้อครับ สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลี</p>
+        </button>
+
+        <button onclick="applyPreset(8, this)" data-text="สวัสดีพี่น้องชาวใต้ หรอยจังฮู้ วันนี้ไปทำไหรมามั่ง แหลงใต้ชัดเจน" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-cyan-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-cyan-300 group-hover:text-cyan-200">
+            <span>🌊 ภาษาใต้ (แหลงใต้)</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">สวัสดีพี่น้องชาวใต้ หรอยจังฮู้ วันนี้ไปทำไหรมามั่ง แหลงใต้ชัดเจน</p>
+        </button>
+
+        <button onclick="applyPreset(9, this)" data-text="สวัสดีจ้ะพ่อแม่พี่น้อง วันนี้มาเจอกันอีกแล้วนะจ๊ะ สนุกสนานกันใหญ่เลยจ้ะ" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-orange-500/50 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-orange-300 group-hover:text-orange-200">
+            <span>🚜 สำเนียงเหน่อสุพรรณ</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-400 truncate mt-1">สวัสดีจ้ะพ่อแม่พี่น้อง วันนี้มาเจอกันอีกแล้วนะจ๊ะ สนุกสนานกันใหญ่เลยจ้ะ</p>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: Single Playground Mode -->
+    <section id="view-single" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Input and Engine Settings -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl">
+            <div class="flex items-center justify-between mb-2">
+              <label for="input-text" class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                <i data-lucide="edit-3" class="w-4 h-4 text-indigo-400"></i>
+                ข้อความภาษาไทยที่ต้องการสังเคราะห์
+              </label>
+              <span id="char-counter" class="text-xs text-slate-500">0 ตัวอักษร</span>
+            </div>
+            <textarea id="input-text" rows="4" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-y" placeholder="พิมพ์ข้อความภาษาไทยที่นี่..."></textarea>
+            
+            <!-- Quick Character tips -->
+            <div class="mt-2 text-xs text-slate-500 flex items-center justify-between">
+              <span>💡 คำแนะนำ: สำหรับข้อความยาวมากๆ แนะนำให้แบ่งเป็นประโยคย่อยเพื่อป้องกันการวนเสียง</span>
+              <button onclick="document.getElementById('input-text').value = ''; updateCharCount();" class="text-slate-400 hover:text-rose-400 transition-colors">ล้างข้อความ</button>
+            </div>
+          </div>
+
+          <!-- Model & Voice Selector Card -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <i data-lucide="cpu" class="w-4 h-4 text-indigo-400"></i>
+              เลือกโมเดลและเครื่องยนต์สังเคราะห์เสียง (Engine & Voice)
+            </h3>
+
+            <!-- Engine Selection Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="engine-options">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Voice Selection Dropdown -->
+            <div class="space-y-1.5 pt-2">
+              <label for="select-voice" class="text-xs font-semibold text-slate-300">เสียงผู้พูด (Speaker Voice)</label>
+              <select id="select-voice" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <!-- Populated via JS -->
+              </select>
+              <p id="engine-desc" class="text-xs text-slate-400 pt-1"></p>
+            </div>
+
+            <!-- Advanced Sliders (Speed, Volume, Noise Scale) -->
+            <div class="border-t border-slate-800 pt-4 space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-300">ปรับแต่งพารามิเตอร์เสียง (Audio Tuning)</span>
+                <button onclick="resetSliders()" class="text-xs text-indigo-400 hover:text-indigo-300">รีเซ็ตค่ามาตรฐาน</button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <div class="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>ความเร็ว (Speed)</span>
+                    <span id="speed-val" class="font-mono text-indigo-400">1.0x</span>
+                  </div>
+                  <input type="range" id="param-speed" min="0.5" max="2.0" step="0.1" value="1.0" class="w-full accent-indigo-500 bg-slate-800 rounded-lg h-2 cursor-pointer">
+                </div>
+
+                <div>
+                  <div class="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>ระดับเสียง (Volume)</span>
+                    <span id="volume-val" class="font-mono text-indigo-400">1.0x</span>
+                  </div>
+                  <input type="range" id="param-volume" min="0.2" max="2.0" step="0.1" value="1.0" class="w-full accent-indigo-500 bg-slate-800 rounded-lg h-2 cursor-pointer">
+                </div>
+
+                <div id="noise-scale-container">
+                  <div class="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>ความเป็นธรรมชาติ (Noise)</span>
+                    <span id="noise-val" class="font-mono text-indigo-400">0.667</span>
+                  </div>
+                  <input type="range" id="param-noise" min="0.1" max="1.0" step="0.05" value="0.667" class="w-full accent-indigo-500 bg-slate-800 rounded-lg h-2 cursor-pointer">
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button id="btn-synthesize" onclick="startSingleSynthesis()" class="w-full py-3.5 px-4 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-50">
+              <i data-lucide="play" class="w-5 h-5 fill-white"></i>
+              <span>สังเคราะห์เสียง (Synthesize Speech)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Result Audio Player & Details -->
+        <div class="lg:col-span-5 space-y-4">
+          <!-- Live Result Card -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between min-h-[300px]">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+                <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                  <i data-lucide="headphones" class="w-4 h-4 text-emerald-400"></i>
+                  ผลลัพธ์เสียงสังเคราะห์ (Audio Player)
+                </h3>
+                <span id="status-tag" class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-medium">รอการทดสอบ</span>
+              </div>
+
+              <!-- Empty State -->
+              <div id="player-empty" class="text-center py-12 text-slate-500 space-y-3">
+                <div class="w-16 h-16 rounded-2xl bg-slate-800/60 border border-slate-700/40 mx-auto flex items-center justify-center">
+                  <i data-lucide="music" class="w-8 h-8 text-slate-600"></i>
+                </div>
+                <p class="text-sm">พิมพ์ข้อความและกดสังเคราะห์เสียงเพื่อฟังผลลัพธ์</p>
+              </div>
+
+              <!-- Loading State -->
+              <div id="player-loading" class="hidden text-center py-12 space-y-3">
+                <div class="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
+                <p class="text-sm text-indigo-300 font-medium animate-pulse">กำลังประมวลผลเสียงด้วยโมเดล Deep Learning...</p>
+                <p class="text-xs text-slate-500">สำหรับ VITS / ONNX ใช้เวลาประมาณ 1-3 วินาที</p>
+              </div>
+
+              <!-- Active Player View -->
+              <div id="player-active" class="hidden space-y-4">
+                <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div class="flex items-center justify-between text-xs">
+                    <span id="res-model-badge" class="px-2 py-0.5 rounded-md bg-indigo-950/80 text-indigo-300 border border-indigo-800/50 font-medium">VachanaTTS (th_f_2)</span>
+                    <span id="res-latency" class="font-mono text-emerald-400 flex items-center gap-1">
+                      <i data-lucide="zap" class="w-3 h-3"></i> 0 ms
+                    </span>
+                  </div>
+
+                  <p id="res-text-preview" class="text-xs text-slate-300 italic line-clamp-2 bg-slate-900/50 p-2 rounded-lg border border-slate-800/40"></p>
+
+                  <!-- Standard HTML5 audio player -->
+                  <audio id="audio-element" controls class="w-full mt-2 custom-audio-player"></audio>
+
+                  <div class="grid grid-cols-3 gap-2 pt-2 text-center text-xs text-slate-400 border-t border-slate-800/60">
+                    <div>
+                      <div class="text-[10px] text-slate-500 uppercase">ความยาวเสียง</div>
+                      <div id="res-duration" class="font-mono text-slate-200">0.0 s</div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] text-slate-500 uppercase">ขนาดไฟล์</div>
+                      <div id="res-size" class="font-mono text-slate-200">0 KB</div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] text-slate-500 uppercase">เวลาที่สร้าง</div>
+                      <div id="res-time" class="font-mono text-slate-200">--:--:--</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex gap-2">
+                  <a id="btn-download-audio" href="#" download class="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-center text-slate-200 flex items-center justify-center gap-1.5 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    ดาวน์โหลดไฟล์เสียง (.wav / .mp3)
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Evaluation Criteria Guide -->
+            <div class="mt-4 pt-4 border-t border-slate-800/80 text-xs text-slate-400 space-y-1.5 bg-slate-950/40 p-3 rounded-xl">
+              <div class="font-semibold text-slate-300 flex items-center gap-1.5">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5 text-indigo-400"></i>
+                เกณฑ์การฟังประเมินคุณภาพเสียง:
+              </div>
+              <ul class="list-disc list-inside space-y-1 text-slate-400 text-[11px]">
+                <li><strong class="text-slate-300">ความเป็นธรรมชาติ:</strong> เสียงการเว้นวรรค จังหวะขึ้นลงของประโยค</li>
+                <li><strong class="text-slate-300">ความชัดเจนของพยัญชนะ ร:</strong> เสียงกระดกลิ้นชัดตรงหลักภาษาไทยหรือไม่</li>
+                <li><strong class="text-slate-300">ตัวเลขและคำย่อ:</strong> การอ่านเลขอารบิก วันที่ และสัญลักษณ์ (เช่น ๆ)</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Session History List -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="history" class="w-3.5 h-3.5 text-slate-400"></i>
+                ประวัติการทดสอบในรอบนี้ (Session History)
+              </h4>
+              <span id="history-count" class="text-xs text-slate-500">0 รายการ</span>
+            </div>
+            <div id="history-list" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+              <p class="text-xs text-slate-600 text-center py-4">ยังไม่มีประวัติการสังเคราะห์</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: Compare Matrix Mode (A/B Test) -->
+    <section id="view-compare" class="hidden space-y-6">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="layers" class="w-5 h-5 text-indigo-400"></i>
+              การทดสอบเปรียบเทียบทุกโมเดลพร้อมกัน (Head-to-Head Benchmark)
+            </h3>
+            <p class="text-xs text-slate-400">ส่งข้อความเดียว แล้วสังเคราะห์ผ่าน 6 โมเดลชั้นนำเพื่อฟังความต่างของน้ำเสียงและความเป็นธรรมชาติแบบ A/B/C Test</p>
+          </div>
+          <button id="btn-run-compare" onclick="startCompareAll()" class="py-2.5 px-5 rounded-xl font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all active:scale-[0.99] whitespace-nowrap">
+            <i data-lucide="zap" class="w-4 h-4 fill-white"></i>
+            <span>⚡ สังเคราะห์เทียบทุกโมเดล (Compare All)</span>
+          </button>
+        </div>
+
+        <!-- Text Input for Compare -->
+        <div>
+          <label for="compare-text" class="text-xs font-semibold text-slate-300 mb-1 block">ข้อความที่ใช้ทดสอบเปรียบเทียบ</label>
+          <div class="flex gap-2">
+            <input type="text" id="compare-text" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="โรงเรียนของเราน่าอยู่ คุณครูใจดีทุกคน รถไฟสายตะวันออกแล่นเร็วมาก">
+          </div>
+        </div>
+
+        <!-- Compare Matrix Results Grid -->
+        <div id="compare-results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          <!-- 6 Model Cards will be injected dynamically -->
+        </div>
+
+        <!-- Benchmark Matrix Table -->
+        <div class="mt-8 border-t border-slate-800 pt-6">
+          <h4 class="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-indigo-400"></i>
+            ตารางเปรียบเทียบจุดเด่นและข้อพิจารณาของแต่ละโมเดล (Thai TTS Architecture Comparison)
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse border border-slate-800">
+              <thead class="bg-slate-950 text-slate-300 font-semibold uppercase tracking-wider">
+                <tr>
+                  <th class="p-3 border border-slate-800">โมเดล / ระบบ</th>
+                  <th class="p-3 border border-slate-800">สถาปัตยกรรม (Architecture)</th>
+                  <th class="p-3 border border-slate-800">จุดเด่นสำคัญ</th>
+                  <th class="p-3 border border-slate-800">การออกเสียง ร / ตัวเลข</th>
+                  <th class="p-3 border border-slate-800">ความต้องการเครื่อง</th>
+                  <th class="p-3 border border-slate-800">สิทธิ์การใช้งาน (License)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800 text-slate-300">
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3 font-semibold text-white">VachanaTTS</td>
+                  <td class="p-3 text-indigo-300">VITS (ONNX / Piper-based)</td>
+                  <td class="p-3">เบา เร็ว เสียงคมชัด สำเนียงไทยมาตรฐาน มี 4 เสียงชาย/หญิง</td>
+                  <td class="p-3 text-emerald-400">CER ต่ำมาก โดยเฉพาะเสียง th_m_1 และ th_f_2</td>
+                  <td class="p-3 text-emerald-400">CPU สบายมาก (~80MB RAM)</td>
+                  <td class="p-3 font-mono">MIT</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3 font-semibold text-white">PyThaiTTS (Kokoro-82M)</td>
+                  <td class="p-3 text-indigo-300">FastThaiG2P / Kokoro ONNX</td>
+                  <td class="p-3">ระบบ NLP เตรียมข้อความในตัว แปลงตัวเลข ไม้ยมก และ IPA อัตโนมัติ</td>
+                  <td class="p-3 text-emerald-400">จัดการเลขอารบิกและคำทับศัพท์อังกฤษได้ดีเยี่ยม</td>
+                  <td class="p-3 text-emerald-400">CPU ออฟไลน์ เบามาก</td>
+                  <td class="p-3 font-mono">Apache-2.0</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3 font-semibold text-white">PyThaiTTS (MakHam)</td>
+                  <td class="p-3 text-indigo-300">MakHam Paradee ONNX</td>
+                  <td class="p-3">ขนาดเล็กจิ๋วเพียง ~8MB รวดเร็วระดับเสี้ยววินาที เหมาะกับ Edge Devices</td>
+                  <td class="p-3">อ่านคำทั่วไปได้ดี เสียงโทนเรียบ</td>
+                  <td class="p-3 text-emerald-400">ต่ำมาก (~8MB)</td>
+                  <td class="p-3 font-mono">Apache-2.0</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3 font-semibold text-white">OmniVoice Thai</td>
+                  <td class="p-3 text-purple-300">0.6B Language-Diffusion</td>
+                  <td class="p-3">เป็นธรรมชาติระดับสูงสุด ออกเสียง ร ชัดเจนสมจริงมาก รองรับ Zero-shot</td>
+                  <td class="p-3">เสียงพูดธรรมชาติที่สุด แต่อาจมีพลาดเรื่องตัวเลขบ้าง</td>
+                  <td class="p-3 text-rose-400">สูงมาก (Weights ~4.4GB, GPU แนะนำ)</td>
+                  <td class="p-3 font-mono">Apache-2.0 (ดู Dataset NC)</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3 font-semibold text-white">F5-TTS-THAI / OpenJaiTTS</td>
+                  <td class="p-3 text-purple-300">Flow Matching (Diffusion)</td>
+                  <td class="p-3">โคลนเสียง (Voice Cloning) จากตัวอย่าง 5-10 วินาทีได้ทันที</td>
+                  <td class="p-3">v2 (IPA) ลดการข้ามคำ ประโยคยาวควรแบ่งย่อย</td>
+                  <td class="p-3 text-amber-400">ปานกลาง-สูง (VRAM 2-4GB)</td>
+                  <td class="p-3 font-mono">MIT / CC-BY-NC-4.0</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3 font-semibold text-white">Edge Neural (Cloud)</td>
+                  <td class="p-3 text-sky-300">Microsoft Neural TTS</td>
+                  <td class="p-3">เสียงระดับ Commercial ชั้นนำ ใช้เป็นตัววัดอ้างอิง (Ground Truth)</td>
+                  <td class="p-3 text-emerald-400">แม่นยำสูงมาก จังหวะการพูดสมบูรณ์แบบ</td>
+                  <td class="p-3 text-emerald-400">ต้องต่ออินเทอร์เน็ต</td>
+                  <td class="p-3 font-mono">Cloud Service</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: Deep Learning Guide & OmniVoice / F5-TTS Guide -->
+    <section id="view-guide" class="hidden space-y-6">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+        <div>
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="book-open" class="w-5 h-5 text-indigo-400"></i>
+            คู่มือเชิงลึก: สถาปัตยกรรมและโมเดลสังเคราะห์เสียงภาษาไทยยุคใหม่
+          </h3>
+          <p class="text-sm text-slate-400 mt-1">สรุปข้อมูลทางเทคนิค วิธีติดตั้งโมเดลขนาดใหญ่ และการเลือกใช้งานตามความเหมาะสมของฮาร์ดแวร์</p>
+        </div>
+
+        <!-- Hardware specs alert -->
+        <div class="p-4 rounded-xl bg-indigo-950/40 border border-indigo-800/60 flex items-start gap-3">
+          <i data-lucide="shield-alert" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
+          <div class="text-xs space-y-1">
+            <div class="font-semibold text-indigo-200">ข้อมูลฮาร์ดแวร์ในเครื่องของคุณ: NVIDIA GeForce RTX 3050 Laptop GPU (4GB VRAM)</div>
+            <p class="text-indigo-300/80 leading-relaxed">
+              เครื่องของคุณมี VRAM ประมาณ 4GB (มีแอปพลิเคชันอื่นใช้งานอยู่บางส่วน) โมเดลที่เหมาะสมสำหรับการใช้งานแบบ Production ที่รวดเร็วและไม่กระตุกคือ <strong>VachanaTTS (ONNX)</strong> และ <strong>PyThaiTTS (Kokoro / MakHam)</strong> ซึ่งกินทรัพยากรน้อยและประมวลผลบน CPU/GPU ได้ทันที
+            </p>
+          </div>
+        </div>
+
+        <!-- Model Deep Dive Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- OmniVoice Card -->
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                OmniVoice Thai (hotdogs/omnivoice-thai)
+              </h4>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800/40">Diffusion 0.6B</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              โมเดล Fine-tune ภาษาไทยจาก OmniVoice ใหญ่ ~0.6 พันล้านพารามิเตอร์ ผลการทดสอบจากชุมชนยอมรับว่า <strong>ให้อารมณ์เสียงและความเป็นธรรมชาติของภาษาไทยดีที่สุด</strong> โดยเฉพาะการออกเสียงพยัญชนะ "ร" ที่ชัดเจนและเป็นธรรมชาติ
+            </p>
+            <div class="bg-slate-900 p-3 rounded-lg text-xs font-mono text-slate-300 space-y-1">
+              <div class="text-slate-500"># ตัวอย่างการเรียกใช้ OmniVoice Thai ใน Python:</div>
+              <div>pip install omnivoice soundfile</div>
+              <div>from omnivoice import OmniVoice</div>
+              <div>import soundfile as sf</div>
+              <div>model = OmniVoice.from_pretrained("hotdogs/omnivoice-thai")</div>
+              <div>wav = model.generate_speech("ข้อความภาษาไทย", language="th")</div>
+              <div>sf.write("output.wav", wav, 24000)</div>
+            </div>
+            <div class="text-[11px] text-amber-400/90 flex items-center gap-1.5">
+              <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+              <span>ข้อควรระวัง: น้ำหนักโมเดลมีขนาด ~4.4GB ต้องการแรมและ GPU สูง</span>
+            </div>
+          </div>
+
+          <!-- F5-TTS / JaiTTS Card -->
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                F5-TTS-THAI & OpenJaiTTS
+              </h4>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/40">Flow Matching / Cloning</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              พัฒนาด้วยเทคนิค <strong>Flow Matching</strong> รองรับการโคลนเสียง (Voice Cloning) แบบ Zero-Shot จากตัวอย่างเสียงเพียงไม่กี่วินาที รุ่น <strong>v2 (IPA)</strong> ช่วยลดปัญหาการข้ามคำและคำซ้ำได้ดียิ่งขึ้น
+            </p>
+            <div class="bg-slate-900 p-3 rounded-lg text-xs font-mono text-slate-300 space-y-1">
+              <div class="text-slate-500"># ตัวอย่างการเรียกใช้ F5-TTS ภาษาไทย:</div>
+              <div>pip install f5-tts-th</div>
+              <div>from f5_tts_th.tts import TTS</div>
+              <div>tts = TTS(model="v2")</div>
+              <div>wav = tts.infer(ref_audio="ref.wav", ref_text="...", gen_text="...")</div>
+            </div>
+            <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>เคล็ดลับ: ข้อความที่ยาวมากควรแบ่งย่อยเป็นท่อนๆ แล้วนำมารวมกัน</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Research Highlights: JaiTTS-v1.0 (VoxCPM) -->
+        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-white text-sm flex items-center gap-2">
+              <i data-lucide="flask-conical" class="w-4 h-4 text-amber-400"></i>
+              ระดับงานวิจัยล่าสุด: JaiTTS-v1.0 (สถาปัตยกรรม VoxCPM)
+            </h4>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/40">Research SOTA 2026</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            พัฒนาโดยทีม JTS-AI (VISTEC) เป็นโมเดล Autoregressive แบบ Tokenizer-free ที่ให้ค่า CER ต่ำเป็นประวัติการณ์เพียง <strong>1.94%</strong> (เทียบเท่าเสียงคนพูดจริง) และสามารถจัดการกับเลขอารบิกและ Code-Switching ไทย-อังกฤษได้ในตัวโดยไม่ต้องผ่านตัวแปลงข้อความภายนอก ณ ปัจจุบันทีมวิจัยได้เผยแพร่ชุด Benchmark บน GitHub และมีโมเดลวิจัยทางเลือกอย่าง <em>OpenJaiTTS (JaiTTS-F5TTS)</em> ให้ดาวน์โหลดบน Hugging Face
+          </p>
+        </div>
+
+        <!-- Regional Dialects Breakdown (Meta MMS & Voice Cloning) -->
+        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-white text-sm flex items-center gap-2">
+              <i data-lucide="map-pin" class="w-4 h-4 text-pink-400"></i>
+              ระบบสังเคราะห์เสียงสำเนียงถิ่นไทย (Regional Dialects: เหนือ, อีสาน, ใต้, สุพรรณ)
+            </h4>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-pink-950 text-pink-300 border border-pink-800/40">Dialect Architecture</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="p-3.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
+              <div class="font-bold text-pink-300 flex items-center gap-1.5">
+                <span>🌸 ภาษาเหนือ (คำเมือง / Lanna)</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-pink-950 text-pink-400 border border-pink-800/30">พร้อมใช้งาน</span>
+              </div>
+              <p class="text-slate-300 leading-relaxed">
+                ขับเคลื่อนด้วย <strong>facebook/mms-tts-nod</strong> จาก Meta MMS (VITS 16kHz) รองรับการป้อนตัวอักษรไทย ออกเสียงสำเนียงคำเมืองล้านนาแท้ ประมวลผลบนเครื่องแบบ Local ได้ 100%
+              </p>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
+              <div class="font-bold text-amber-300 flex items-center gap-1.5">
+                <span>🌾 ภาษาอีสาน (Northeastern Thai / Lao)</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-400 border border-amber-800/30">พร้อมใช้งาน</span>
+              </div>
+              <p class="text-slate-300 leading-relaxed">
+                ขับเคลื่อนด้วย <strong>facebook/mms-tts-lao</strong> ผสานกับ <em>Thai-to-Lao Script Transliteration Bridge</em> เนื่องจากภาษาอีสานและลาวมีสัทศาสตร์เดียวกัน 95%+ ทำให้สังเคราะห์เสียงเว้าอีสานได้อย่างสมบูรณ์แบบ
+              </p>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
+              <div class="font-bold text-cyan-300 flex items-center gap-1.5">
+                <span>🌊 ภาษาใต้ (แหลงใต้ / ปักษ์ใต้)</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800/30">Voice Cloning Path</span>
+              </div>
+              <p class="text-slate-300 leading-relaxed">
+                ในโอเพนซอร์สสากลยังไม่มีเช็คพอยต์สำเร็จรูป แต่มีชุดข้อมูลเสียง เช่น <code>CMKL/Porjai-Thai-voice-dataset-pattani</code> ทางออกที่มีประสิทธิภาพที่สุดคือใช้ <strong>F5-TTS Zero-Shot Cloning</strong> โดยอัดเสียงคนใต้แท้ 5-10 วินาทีเป็น Reference
+              </p>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5">
+              <div class="font-bold text-orange-300 flex items-center gap-1.5">
+                <span>🚜 สำเนียงเหน่อสุพรรณ</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-orange-950 text-orange-400 border border-orange-800/30">Prosody & Cloning</span>
+              </div>
+              <p class="text-slate-300 leading-relaxed">
+                สำเนียงเหน่อสุพรรณเป็นการเอื้อนระดับเสียงวรรณยุกต์ (Pitch Contour) และสระยาวขึ้น บริการในตลาด (เช่น Botnoi Voice) ใช้เสียงผู้ใหญ่ลี หรือใช้ <strong>Voice Cloning</strong> จากเสียงต้นฉบับสำเนียงสุพรรณ
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/app.js?v=20261118_0310"></script>
+</body>
+</html>

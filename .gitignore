@@ -1,0 +1,40 @@
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Audio Outputs & Temp Files
+output/*
+!output/.gitkeep
+tmp_*
+*.wav
+*.mp3
+
+# Model weights & large caches
+voices/
+*.onnx
+*.onnx.json
+*.pt
+*.bin
+*.safetensors
+.cache/
+mms_models.json
+fetch_mms.py
+
+# System & Editor
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
