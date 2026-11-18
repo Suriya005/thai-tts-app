@@ -8,6 +8,12 @@ import sys
 import time
 from pathlib import Path
 from typing import Dict, Any, Optional
+
+# Prepend bundled ffmpeg binaries to PATH
+_ffmpeg_dir = Path(__file__).resolve().parent / ".venv" / "Lib" / "site-packages" / "imageio_ffmpeg" / "binaries"
+if _ffmpeg_dir.exists():
+    os.environ["PATH"] = str(_ffmpeg_dir) + os.pathsep + os.environ.get("PATH", "")
+
 import soundfile as sf
 import torch
 import torchaudio
@@ -34,8 +40,8 @@ CLONE_SPEAKERS = {
         "id": "clone_male_dang",
         "name": "🤠 ด่าง สตูดิโอ (โคลนเสียงและสำเนียงแท้ 100% - เว้าพื้นหนัง)",
         "gender": "male",
-        "ref_audio": str(OUTPUT_DIR / "real_human_isan" / "male" / "clip_dang_1.wav"),
-        "ref_text": "ข้อนนึงสองสิกเป็นคนมีอีกที่คนเธอนั้น",
+        "ref_audio": str(OUTPUT_DIR / "real_human_isan" / "male" / "clip_dang_4.wav"),
+        "ref_text": "ลุงโทนี่มีหน้าที่ลากบักตัวต้นเหตุไปกระทืบนอกร้าน",
         "description": "โคลนเสียงพูดและสำเนียงพากย์อีสานของ ด่าง สตูดิโอ จากคลิปเว้าพื้นหนัง Green Book แบบ 100%"
     },
     "clone_female_wiri": {
@@ -66,11 +72,19 @@ def get_device():
 def load_f5_model():
     global _f5_model
     if _f5_model is None:
+        from huggingface_hub import hf_hub_download
         from f5_tts.api import F5TTS
         device = get_device()
-        print(f"[VoiceClone] Loading F5-TTS Neural Voice Cloner on device: {device.upper()}...", flush=True)
-        _f5_model = F5TTS(device=device)
-        print("[VoiceClone] F5-TTS Loaded successfully!", flush=True)
+        print(f"[VoiceClone] Loading ThonburianTTS (Thai Fine-Tuned F5-TTS) on device: {device.upper()}...", flush=True)
+        vocab_path = hf_hub_download(repo_id="biodatlab/ThonburianTTS", filename="megaF5/mega_vocab.txt")
+        ckpt_path = hf_hub_download(repo_id="biodatlab/ThonburianTTS", filename="megaF5/mega_f5_last.safetensors")
+        _f5_model = F5TTS(
+            model="F5TTS_v1_Base",
+            ckpt_file=ckpt_path,
+            vocab_file=vocab_path,
+            device=device
+        )
+        print("[VoiceClone] ThonburianTTS Loaded successfully!", flush=True)
     return _f5_model
 
 def synthesize_cloned_voice(
@@ -78,7 +92,7 @@ def synthesize_cloned_voice(
     text: str,
     out_path: str,
     speed: float = 1.0,
-    nfe_step: int = 16,
+    nfe_step: int = 32,
     auto_isan: bool = True
 ) -> Dict[str, Any]:
     """
