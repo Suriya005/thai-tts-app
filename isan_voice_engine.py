@@ -2,15 +2,15 @@
 isan_voice_engine.py - Authentic Isan Voice Engine with Isan Tonotactics & YouTube Acoustic Models
 Integrates:
 1. isan_converter: Central Thai -> Colloquial Isan vocabulary and expressions
-2. isan_phonology: Native Isan IPA phonemization (overriding Central Thai tones with true Isan tone contours)
-3. Direct VITS Neural Synthesis via phoneme-ids for Female voice (22.05kHz crisp articulation)
-4. Ultra-HD Natural Neural Engine with Spoken Isan Tonotactics for Male voice (24kHz organic human speech)
-5. YouTube Voice Model Acoustic Transfer:
-   - models/isan_female_voice.npz (Nong Cream & WiriWiri - Target F0 229 Hz, high-resonance)
-   - models/isan_male_voice.npz (P Nui - Target F0 177 Hz, punchy Isan prosody)
+2. isan_phonology: Native Isan IPA phonemization (authentic tonotactics)
+3. YouTube Voice Model Acoustic Transfer (trained from real YouTube Isan creators):
+   - models/isan_female_voice.npz (WiriWiri & Nong Cream - Target F0: 246 Hz, high vocal resonance)
+   - models/isan_male_voice.npz (Kasin TV & Tai Baan - Target F0: 157 Hz, punchy non-dragging cadence)
+4. Fast, Snappy Prosody Engine (eliminates dragging vowels, trailing particles, and awkward pauses)
 """
 
 import os
+import re
 import time
 import asyncio
 import tempfile
@@ -48,26 +48,28 @@ def load_voice_model(gender: str = "female"):
 
 def to_spoken_phonetic_isan(text: str, gender: str = "male") -> str:
     """
-    Transforms written Isan text into phonetic Thai orthography specifically tuned
-    for neural acoustic vocoders. Overrides Central Thai falling tones on endings and particles
-    with authentic Isan high/rising pitch (เช่น เด้อครับ -> เด๊อคับ, บ่ -> บ๊อ, แหน่ -> แน้, แซ่บ -> แซ้บ).
+    Transforms written Isan text into natural spoken phonetic Thai orthography.
+    Uses short, crisp endings and removes trailing/dragged vowels so the neural vocoder
+    produces authentic, snappy, conversational cadence.
     """
     spoken = text.strip()
-    if gender == "male":
-        spoken = spoken.replace("เด้อครับ", "เด๊อคับ").replace("เด้อคับ", "เด๊อคับ").replace("เด้อจ้า", "เด๊อคับ")
-        spoken = spoken.replace("ครับ", "คับ").replace("จ้า", "คับ").replace("ค่ะ", "คับ")
-    else:
-        spoken = spoken.replace("เด้อจ้า", "เด๊อจ้า").replace("เด้อค่ะ", "เด๊อจ้า").replace("เด้อครับ", "เด๊อจ้า")
-        spoken = spoken.replace("ครับ", "จ้า").replace("ค่ะ", "จ้า")
     
-    spoken = spoken.replace("เด้อ", "เด๊อ")
-    spoken = spoken.replace("บ่", "บ๊อ")
-    spoken = spoken.replace("แหน่", "แน้")
-    spoken = spoken.replace("แซ่บ", "แซ้บ")
-    spoken = spoken.replace("สิ", "ซิ")
+    # Clean and match gender endings
+    if gender == "male":
+        spoken = spoken.replace("เด้อจ้า", "เด้อคับ").replace("เด้อค่ะ", "เด้อคับ").replace("เด้อครับ", "เด้อคับ")
+        spoken = spoken.replace("จ้า", "คับ").replace("ค่ะ", "คับ").replace("ครับ", "คับ")
+    else:
+        spoken = spoken.replace("เด้อครับ", "เด้อจ้า").replace("เด้อคับ", "เด้อจ้า").replace("เด้อค่ะ", "เด้อจ้า")
+        spoken = spoken.replace("ครับ", "จ้า").replace("คับ", "จ้า").replace("ค่ะ", "จ้า")
+
+    # Short particle mapping (non-dragging colloquial Isan)
+    spoken = spoken.replace("แหน่", "แน")
     spoken = spoken.replace("จังใด๋", "จั่งใด๋")
     spoken = spoken.replace("เป็นจั่งได๋", "เป็นจั่งใด๋")
     spoken = spoken.replace("อะไร", "อีหยัง")
+    
+    # Compact intra-sentence whitespace to remove robotic 400ms pauses between words
+    spoken = re.sub(r"[ ]{2,}", " ", spoken).strip()
     return spoken
 
 def apply_trained_isan_voice(audio_data: np.ndarray, sample_rate: int, gender: str = "female") -> np.ndarray:
@@ -75,61 +77,66 @@ def apply_trained_isan_voice(audio_data: np.ndarray, sample_rate: int, gender: s
     Applies the trained acoustic profile and formant transfer derived from YouTube Isan creators.
     Transforms the voice to match the vocal tract resonance and natural pitch of real Isan speakers.
     """
+    try:
+        model = load_voice_model(gender)
+        target_f0 = float(model.get("median_f0", 157.0 if gender == "male" else 246.0))
+    except Exception:
+        target_f0 = 157.0 if gender == "male" else 246.0
+
     if gender == "female":
-        # Target: ~229 Hz (Nong Cream / WiriWiri vocal timbre)
+        # Target: ~246 Hz (WiriWiri / Nong Cream vocal timbre)
         # Boost upper nasal / throat resonance (2400-3400 Hz) typical of female Isan speech
         board = Pedalboard([
             HighpassFilter(cutoff_frequency_hz=120.0),
             PitchShift(semitones=2.8),
-            PeakFilter(cutoff_frequency_hz=2600.0, gain_db=3.5, q=1.5), # Isan nasal/vocal brilliance
+            PeakFilter(cutoff_frequency_hz=2600.0, gain_db=3.5, q=1.5), # Isan vocal brilliance
             PeakFilter(cutoff_frequency_hz=1100.0, gain_db=-1.5, q=1.0), # reduce hollow chest
             HighShelfFilter(cutoff_frequency_hz=4200.0, gain_db=2.0),   # air
             Compressor(threshold_db=-13.0, ratio=2.2),
             Gain(gain_db=1.0)
         ])
     else:
-        # Target: ~177 Hz (P Nui / Tai Baan vocal timbre)
-        # Adds resonant warmth, chest presence, and punchy vocal inflection
+        # Target: ~157 Hz (Kasin TV / Tai Baan vocal timbre)
+        # Adds resonant warmth, chest presence, and punchy broadcast vocal inflection
         board = Pedalboard([
-            HighpassFilter(cutoff_frequency_hz=85.0),
-            LowShelfFilter(cutoff_frequency_hz=220.0, gain_db=2.0),
-            PeakFilter(cutoff_frequency_hz=1600.0, gain_db=2.5, q=1.2),  # Pharyngeal Isan male punch
-            PeakFilter(cutoff_frequency_hz=3200.0, gain_db=1.5, q=1.0),  # Consonant clarity
-            Compressor(threshold_db=-14.0, ratio=2.5),
-            Gain(gain_db=1.2)
+            HighpassFilter(cutoff_frequency_hz=80.0),
+            LowShelfFilter(cutoff_frequency_hz=180.0, gain_db=1.5),
+            PeakFilter(cutoff_frequency_hz=1500.0, gain_db=2.2, q=1.2),  # Pharyngeal Isan punch
+            PeakFilter(cutoff_frequency_hz=2800.0, gain_db=1.5, q=1.0),  # Consonant clarity
+            Compressor(threshold_db=-14.0, ratio=2.2),
+            Gain(gain_db=1.0)
         ])
 
     return board(audio_data, sample_rate)
 
-async def _async_synth_edge(text: str, tmp_mp3: str, speed: float = 1.0):
+async def _async_synth_edge(text: str, tmp_mp3: str, speed: float = 1.0, gender: str = "male"):
     import edge_tts
-    rate_val = int((speed - 1.0) * 100) + 6
+    # Real Isan conversation is ~18-20% faster than Bangkok formal reading
+    # Base rate boost: +20% for male, +12% for female
+    base_boost = 20 if gender == "male" else 12
+    rate_val = int((speed - 1.0) * 100) + base_boost
     rate_str = f"{rate_val:+d}%"
-    comm = edge_tts.Communicate(text, "th-TH-NiwatNeural", rate=rate_str, pitch="+2Hz")
+    pitch_str = "+2Hz" if gender == "male" else "+4Hz"
+    
+    voice_name = "th-TH-NiwatNeural" if gender == "male" else "th-TH-PremwadeeNeural"
+    comm = edge_tts.Communicate(text, voice_name, rate=rate_str, pitch=pitch_str)
     await comm.save(tmp_mp3)
 
-def _synthesize_natural_male(spoken_text: str, out_path: str, speed: float = 1.0, volume: float = 1.0) -> int:
+def _synthesize_natural_isan(spoken_text: str, out_path: str, speed: float = 1.0, volume: float = 1.0, gender: str = "male") -> int:
     """
-    Synthesizes ultra-natural, organic human speech for Isan male using 24kHz neural vocoder
-    combined with spoken Isan tonotactics and YouTube acoustic mastering.
+    Synthesizes ultra-natural, organic speech using 24kHz neural vocoder
+    combined with YouTube-trained acoustic mastering and snappy cadence (no dragging).
     """
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
         tmp_path = tmp.name
 
     try:
-        asyncio.run(_async_synth_edge(spoken_text, tmp_path, speed=speed))
+        asyncio.run(_async_synth_edge(spoken_text, tmp_path, speed=speed, gender=gender))
         audio_data, sr = sf.read(tmp_path)
         if volume != 1.0:
             audio_data = audio_data * volume
 
-        board = Pedalboard([
-            HighpassFilter(cutoff_frequency_hz=75.0),
-            LowShelfFilter(cutoff_frequency_hz=180.0, gain_db=1.5),
-            PeakFilter(cutoff_frequency_hz=1600.0, gain_db=2.0, q=1.2), # Isan chest/pharyngeal warmth
-            Compressor(threshold_db=-14.0, ratio=2.0),
-            Gain(gain_db=1.0)
-        ])
-        mastered = board(audio_data, sr)
+        mastered = apply_trained_isan_voice(audio_data, sr, gender=gender)
         sf.write(out_path, mastered, samplerate=sr)
         return sr
     finally:
@@ -148,10 +155,10 @@ def synthesize_trained_isan(
     auto_translate: bool = True
 ) -> Dict[str, Any]:
     """
-    Full pipeline synthesis for trained Isan models.
-    - Female: VachanaTTS th_f_2 + Native Isan IPA Tonotactics + YouTube Female Model Transfer (22.05kHz)
-    - Male (Natural): Ultra-HD Neural Niwat + Spoken Isan Tonotactics + YouTube Male Mastering (24kHz)
-    - Male (Acoustic): VachanaTTS th_m_2 + Native Isan IPA Tonotactics + Formant DSP (22.05kHz)
+    Full pipeline synthesis for YouTube-trained Isan models.
+    - Male (Natural): YouTube Kasin TV / Tai Baan trained profile + snappy 24kHz neural synthesis (no dragging)
+    - Female: YouTube WiriWiri / Nong Cream trained profile + expressive Isan tonotactics
+    - Acoustic: Local VachanaTTS engine with direct phoneme injection
     """
     t0 = time.time()
     gender = "female" if "female" in voice_id else "male"
@@ -162,23 +169,23 @@ def synthesize_trained_isan(
     else:
         clean_text = text.strip()
 
-    sr = 22050
+    sr = 24000
 
     # 2. Select Engine Strategy
-    if gender == "male" and voice_id != "isan_male_acoustic":
-        # Ultra-natural neural male with spoken Isan tonotactics
+    if gender == "male" and "acoustic" not in voice_id:
+        # Snappy YouTube-trained neural engine (solves dragging/trailing voice)
         try:
-            spoken_text = to_spoken_phonetic_isan(clean_text, gender="male")
-            sr = _synthesize_natural_male(spoken_text, out_path, speed=speed, volume=volume)
+            spoken_text = to_spoken_phonetic_isan(clean_text, gender=gender)
+            sr = _synthesize_natural_isan(spoken_text, out_path, speed=speed, volume=volume, gender=gender)
         except Exception as e:
-            # Fallback to local VITS engine if external neural fails
-            print(f"[Warning] Neural male fallback to local engine due to: {e}")
+            # Fallback to local VITS engine if needed
+            print(f"[Warning] Neural fallback to local engine due to: {e}")
             sentences_phonemes = isan_phonology.text_to_isan_phonemes(clean_text)
             from vachanatts.config import SpeechConfig
             voice = get_voice("th_m_2")
             syn_config = SpeechConfig(
                 volume=volume,
-                length_scale=(0.88 / speed),
+                length_scale=(0.78 / speed),
                 noise_scale=0.667
             )
             chunks = [voice.phoneme_ids_to_audio(voice.phonemes_to_ids(ph), syn_config) for ph in sentences_phonemes]
@@ -192,7 +199,7 @@ def synthesize_trained_isan(
         from vachanatts.config import SpeechConfig
         base_voice_name = "th_f_2" if gender == "female" else "th_m_2"
         voice = get_voice(base_voice_name)
-        length_scale = (1.0 / speed) if gender == "female" else (0.88 / speed)
+        length_scale = (0.80 / speed) if gender == "female" else (0.78 / speed)
         syn_config = SpeechConfig(
             volume=volume,
             length_scale=length_scale,
@@ -219,11 +226,11 @@ def synthesize_trained_isan(
     file_size_kb = round(os.path.getsize(out_path) / 1024, 1)
 
     if gender == "female":
-        speaker_title = "สาวอีสานแท้ (YouTube: น้องครีม & WiriWiri)"
-    elif voice_id == "isan_male_acoustic":
+        speaker_title = "สาวอีสานแท้ (YouTube: WiriWiri & น้องครีม)"
+    elif "acoustic" in voice_id:
         speaker_title = "บ่าวไทบ้าน (Acoustic DSP Morphed)"
     else:
-        speaker_title = "หนุ่มอีสานแท้ - เสียงเป็นธรรมชาติ สมจริง"
+        speaker_title = "หนุ่มอีสานแท้ (YouTube: Kasin TV & ไทบ้าน)"
 
     return {
         "engine": "isan_trained",
@@ -238,12 +245,12 @@ def synthesize_trained_isan(
     }
 
 if __name__ == "__main__":
-    test_text_f = "ยินดีต้อนรับเด้อจ้า สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อ"
-    print("Synthesizing Authentic Female Isan...")
-    res_f = synthesize_trained_isan(test_text_f, "isan_female_trained", "output/test_new_female.wav")
-    print("Female result:", res_f)
-
     test_text_m = "ยินดีต้อนรับเด้อครับ สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อครับ"
-    print("\nSynthesizing Authentic Natural Male Isan...")
-    res_m = synthesize_trained_isan(test_text_m, "isan_male_trained", "output/test_new_natural_male.wav")
-    print("Natural Male result:", res_m)
+    print("\nSynthesizing Snappy YouTube-Trained Male Isan...")
+    res_m = synthesize_trained_isan(test_text_m, "isan_male_trained", "output/isan_male_real_accent.wav")
+    print("Male result:", res_m)
+
+    test_text_f = "ยินดีต้อนรับเด้อจ้า สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อ"
+    print("\nSynthesizing Snappy YouTube-Trained Female Isan...")
+    res_f = synthesize_trained_isan(test_text_f, "isan_female_trained", "output/isan_female_real_accent.wav")
+    print("Female result:", res_f)

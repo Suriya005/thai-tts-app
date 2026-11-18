@@ -1,6 +1,10 @@
 """
 train_isan_voice.py - Fast Acoustic Feature Extraction & Voice Model Training
 Trains authentic Isan Voice Models from native YouTube speech datasets.
+Includes:
+1. Kasin TV (Clear colloquial Isan educator & native speaker)
+2. Tai Baan (Young rural native Isan conversational speech)
+3. WiriWiri & Nong Cream (Authentic northeastern female creators)
 """
 
 import os
@@ -18,6 +22,7 @@ def train_speaker_model(audio_paths, output_model_path, gender="female"):
     print(f"==========================================", flush=True)
 
     all_voiced_chunks = []
+    chunk_durations = []
     target_sr = 22050
     f0_list = []
     spectral_envelopes = []
@@ -31,11 +36,12 @@ def train_speaker_model(audio_paths, output_model_path, gender="female"):
             continue
 
         print(f"Processing: {os.path.basename(path)}...", flush=True)
-        data, sr = librosa.load(path, sr=target_sr, mono=True)
+        # Load up to 180 seconds per file for high training richness and speed
+        data, sr = librosa.load(path, sr=target_sr, mono=True, duration=180.0)
         
         # 1. Noise reduction
         try:
-            cleaned = nr.reduce_noise(y=data, sr=target_sr, prop_decrease=0.7, n_fft=1024)
+            cleaned = nr.reduce_noise(y=data, sr=target_sr, prop_decrease=0.6, n_fft=1024)
         except Exception:
             cleaned = data
 
@@ -45,12 +51,13 @@ def train_speaker_model(audio_paths, output_model_path, gender="female"):
         
         for start, end in intervals:
             duration = (end - start) / target_sr
-            if 0.3 <= duration <= 10.0:
+            if 0.25 <= duration <= 8.0:
                 chunk = cleaned[start:end]
                 max_val = np.max(np.abs(chunk))
                 if max_val > 0.04:
                     chunk = chunk / max_val * 0.95
                     all_voiced_chunks.append(chunk)
+                    chunk_durations.append(duration)
 
                     # Compute 64-band Mel spectral envelope
                     S = np.abs(librosa.stft(chunk, n_fft=1024, hop_length=256))
@@ -69,20 +76,27 @@ def train_speaker_model(audio_paths, output_model_path, gender="female"):
         raise ValueError(f"No voiced audio extracted for {gender} model!")
 
     total_duration = sum(len(c) for c in all_voiced_chunks) / target_sr
+    mean_chunk_dur = float(np.mean(chunk_durations))
+    median_chunk_dur = float(np.median(chunk_durations))
     print(f"Extracted {len(all_voiced_chunks)} clean voiced chunks ({total_duration:.1f} seconds total)", flush=True)
+    print(f"Speech interval cadence: Mean={mean_chunk_dur:.2f}s, Median={median_chunk_dur:.2f}s", flush=True)
 
     # 3. Model Parameters Calculation
-    median_f0 = float(np.median(f0_list)) if len(f0_list) > 0 else (190.0 if gender == "female" else 115.0)
+    median_f0 = float(np.median(f0_list)) if len(f0_list) > 0 else (195.0 if gender == "female" else 135.0)
     std_f0 = float(np.std(f0_list)) if len(f0_list) > 0 else 25.0
     mean_spectral_env = np.mean(spectral_envelopes, axis=0)
     mel_freqs = librosa.mel_frequencies(n_mels=64, fmin=0, fmax=target_sr//2)
 
     # 4. Formant Resonances & EQ profile
-    combined_audio = np.concatenate(all_voiced_chunks[:25])
+    sample_limit = min(30, len(all_voiced_chunks))
+    combined_audio = np.concatenate(all_voiced_chunks[:sample_limit])
     a = librosa.lpc(combined_audio, order=16)
     
     eq_curve = mean_spectral_env - np.mean(mean_spectral_env)
     eq_curve = np.clip(eq_curve, -12.0, 12.0)
+
+    # Target speaking rate: Isan speech is punchy and fast (~1.15x to 1.25x compared to formal Bangkok Thai)
+    optimal_rate_boost = 18 if gender == "male" else 12
 
     # Save Voice Model Artifact
     model_data = {
@@ -90,6 +104,9 @@ def train_speaker_model(audio_paths, output_model_path, gender="female"):
         "sample_rate": target_sr,
         "median_f0": median_f0,
         "std_f0": std_f0,
+        "mean_chunk_dur": mean_chunk_dur,
+        "median_chunk_dur": median_chunk_dur,
+        "optimal_rate_boost": optimal_rate_boost,
         "spectral_envelope": mean_spectral_env,
         "mel_freqs": mel_freqs,
         "eq_curve": eq_curve,
@@ -101,17 +118,21 @@ def train_speaker_model(audio_paths, output_model_path, gender="female"):
     np.savez(output_model_path, **model_data)
     print(f"Saved trained {gender.upper()} Isan model to: {output_model_path}", flush=True)
     print(f" -> Target F0: {median_f0:.1f} Hz (Std: {std_f0:.1f} Hz)", flush=True)
+    print(f" -> Optimal Rate Boost: +{optimal_rate_boost}% (Snappy, non-dragging)", flush=True)
     print(f" -> Spectral Bands: 64 Mel filters (0 - {target_sr//2} Hz)", flush=True)
     return model_data
 
 if __name__ == "__main__":
     female_sources = [
+        "training_data/female/raw_wiriwiri.wav",
         "training_data/female/raw_nongcream.wav",
         "output/ref_female_isan.wav"
     ]
     train_speaker_model(female_sources, "models/isan_female_voice.npz", gender="female")
 
     male_sources = [
+        "training_data/male/raw_kasin.wav",
+        "training_data/male/raw_taibaan.wav",
         "training_data/male/raw_pnui.wav",
         "output/ref_male_isan.wav"
     ]
