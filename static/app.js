@@ -525,3 +525,30 @@ function playHistoryAudio(url) {
   const audio = new Audio(url);
   audio.play().catch(e => console.error(e));
 }
+
+let activeHumanAudio = null;
+function playRealHumanAudio(url, title) {
+  const player = document.getElementById("audio-player");
+  const resultBox = document.getElementById("result-box");
+  const meta = document.getElementById("audio-meta");
+
+  if (activeHumanAudio) {
+    activeHumanAudio.pause();
+    activeHumanAudio = null;
+  }
+
+  if (player) {
+    player.src = url;
+    player.play().catch(e => console.error(e));
+    if (resultBox) resultBox.classList.remove("hidden");
+    if (meta) {
+      meta.innerHTML = `
+        <span class="text-amber-400 font-bold">🎙️ เสียงคนอีสานแท้ 100% (YouTube)</span> • 
+        <span class="text-slate-300">${title}</span>
+      `;
+    }
+  } else {
+    activeHumanAudio = new Audio(url);
+    activeHumanAudio.play().catch(e => console.error(e));
+  }
+}

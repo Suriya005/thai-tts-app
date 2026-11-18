@@ -342,13 +342,30 @@ async def api_compare(req: CompareRequest):
     results = await asyncio.gather(*tasks)
     return {"results": results, "text": req.text}
 
-@app.get("/api/audio/{filename}")
+@app.get("/api/audio/{filename:path}")
 def get_audio(filename: str):
     file_path = OUTPUT_DIR / filename
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="ไม่พบไฟล์เสียง")
     media_type = "audio/wav" if filename.endswith(".wav") else "audio/mpeg"
     return FileResponse(file_path, media_type=media_type)
+
+@app.get("/api/real_human_samples")
+def get_real_human_samples():
+    return {
+        "male": [
+            {"id": "m1", "title": "ทักทายภาษาอีสานแท้", "speaker": "Kasin TV (บ่าวอีสาน)", "duration": "2.4s", "url": "/api/audio/real_human_isan/male/clip_1.wav"},
+            {"id": "m2", "title": "ถามไถ่สารทุกข์สุกดิบ", "speaker": "Kasin TV (บ่าวอีสาน)", "duration": "2.2s", "url": "/api/audio/real_human_isan/male/clip_2.wav"},
+            {"id": "m3", "title": "ประโยคสนทนาภาษาอีสาน", "speaker": "Kasin TV (บ่าวอีสาน)", "duration": "5.6s", "url": "/api/audio/real_human_isan/male/clip_3.wav"},
+            {"id": "m4", "title": "พูดคุยสไตล์บ่าวอีสาน", "speaker": "Kasin TV (บ่าวอีสาน)", "duration": "2.9s", "url": "/api/audio/real_human_isan/male/clip_4.wav"}
+        ],
+        "female": [
+            {"id": "f1", "title": "ทักทายสาวขอนแก่นแท้", "speaker": "WiriWiri (สาวอีสาน)", "duration": "2.0s", "url": "/api/audio/real_human_isan/female/clip_1.wav"},
+            {"id": "f2", "title": "ถามไถ่เป็นจังใด๋แหน่", "speaker": "WiriWiri (สาวอีสาน)", "duration": "2.2s", "url": "/api/audio/real_human_isan/female/clip_2.wav"},
+            {"id": "f3", "title": "พูดคุยสไตล์สาวอีสาน", "speaker": "WiriWiri (สาวอีสาน)", "duration": "1.9s", "url": "/api/audio/real_human_isan/female/clip_3.wav"},
+            {"id": "f4", "title": "ชวนกินข้าวแซ่บหลาย", "speaker": "WiriWiri (สาวอีสาน)", "duration": "1.6s", "url": "/api/audio/real_human_isan/female/clip_4.wav"}
+        ]
+    }
 
 @app.get("/api/history")
 def get_history():
