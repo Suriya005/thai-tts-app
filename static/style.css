@@ -1,23 +1,31 @@
-/* Custom Styles for Thai TTS Benchmark Studio */
+/* Custom Styles for Thai Voice Studio */
 
-.preset-btn {
+.quick-spk-btn {
+  cursor: pointer !important;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.quick-spk-btn:hover {
+  transform: translateY(-2px);
+}
+
+.quick-spk-btn:active {
+  transform: scale(0.97);
+}
+
+.script-pill {
   cursor: pointer !important;
   user-select: none;
   transition: all 0.15s ease-in-out;
 }
 
-.preset-btn:hover {
+.script-pill:hover {
   transform: translateY(-1px);
 }
 
-.preset-btn:active {
-  transform: scale(0.97);
-}
-
-.preset-btn.active-preset {
-  border-color: #818cf8 !important;
-  background-color: rgba(99, 102, 241, 0.25) !important;
-  box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.4) !important;
+.script-pill:active {
+  transform: scale(0.96);
 }
 
 ::-webkit-scrollbar {
@@ -44,7 +52,7 @@ audio::-webkit-media-controls-panel {
 }
 
 audio::-webkit-media-controls-play-button {
-  background-color: #6366f1;
+  background-color: #f59e0b;
   border-radius: 50%;
 }
 
@@ -52,21 +60,4 @@ audio::-webkit-media-controls-current-time-display,
 audio::-webkit-media-controls-time-remaining-display {
   color: #94a3b8;
   font-family: monospace;
-}
-
-/* Engine Card Active States */
-.engine-card.active {
-  border-color: #6366f1 !important;
-  background-color: rgba(99, 102, 241, 0.12) !important;
-  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.3);
-}
-
-/* Pulse animation for latency pill */
-@keyframes glow {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; filter: drop-shadow(0 0 6px #10b981); }
-}
-
-.latency-badge {
-  animation: glow 2s ease-in-out infinite;
 }

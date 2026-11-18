@@ -1,20 +1,25 @@
-// Thai TTS Benchmark & Testing Studio - Frontend App
+// Thai Voice Studio - Frontend App
 let modelsData = null;
-let currentEngine = "vachanatts";
+let currentEngine = "voice_clone";
+let currentVoice = "clone_male_dang";
 let activeAudios = [];
 
-const PRESETS = [
-  "โรงเรียนของเราน่าอยู่ คุณครูใจดีทุกคน รถไฟสายตะวันออกแล่นเร็วมาก",
-  "วันที่ 15 พฤศจิกายน 2569 เวลา 14:30 น. ราคา 1,250.50 บาท",
-  "วันนี้เรามี meeting สำคัญตอนเช้า และอย่าลืม update status ใน presentation ด้วยนะ",
-  "สวัสดีครับ ยินดีต้อนรับสู่รายการพอดแคสต์เพื่อการเรียนรู้เทคโนโลยี AI ยุคใหม่",
-  "เด็กๆ วิ่งเล่นกันสนุกสนานมากๆ ในวันหยุดสุดสัปดาห์นี้",
-  "สวัสดีค่ะ มีบริการอะไรให้ช่วยเหลือเพิ่มเติมไหมคะ ยินดีให้บริการค่ะ",
-  "ยินดีต้อนรับเจ้า วันนี้อากาศดีขนาด กิ๋นข้าวแลงแล้วกา ลำแต้ๆ เน้อ",
-  "ยินดีต้อนรับเด้อจ้า สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อ",
-  "สวัสดีพี่น้องชาวใต้ หรอยจังฮู้ วันนี้ไปทำไหรมามั่ง แหลงใต้ชัดเจน",
-  "สวัสดีจ้ะพ่อแม่พี่น้อง วันนี้มาเจอกันอีกแล้วนะจ๊ะ สนุกสนานกันใหญ่เลยจ้ะ"
-];
+const SCRIPTS = {
+  dang_long: "สวัสดีครับพี่น้อง มื้อนี้พบกับด่างสตูดิโอ มาเว้าพื้นหนังให้ฟัง หนังเรื่องนี้บอกได้คำเดียวว่าแซ่บคักแท้ มื้อนี้สิพาไปเบิ่งเรื่อง กรีนบุ๊ค หนังที่หมอผิวดำนั่งรถไปกับคนขับรถอิตาลี นั่งนำกันไปทั่วบ้านทั่วเมือง ตอนแรกกะบ่มักขี้หน้ากันดอก แต่พอดนไปดนมา กะฮักแพงกันคือพี่น้อง ลุงโทนี่เรากะหมัดหนักคัก ไผมากวนโอ๊ยนี่ลากไปกระทืบนอกร้านโลด บักตัวต้นเหตุนี่แลนหนีเกือบตาย นั่งเบิ่งแล้วม่วนหลายอีหลีสู ไผยังบ่ได้เบิ่ง ฟ้าวไปหาเบิ่งเด้อ แซ่บอีหลีตั๊วนี่",
+  isan_eating: "สบายดีบ่พี่น้อง มื้อนี้เมื่อยนำงานหลาย มาเด้อมากินข้าวแลงนำกัน มื้อนี้มีตำบักหุ่งใส่ต่อนปลาร้าต้มสุก กลิ่นหอมหิ่นๆ กินกับผักบุ้งกะเพราลวก แล้วกะมีต้มไก่บ้านใส่ใบมะขามอ่อน ซดน้ำฮ้อนๆ แซ่บจนน้ำตาไหล ข้าวเหนียวฮ้อนๆ ปั้นตุ้ยคุ้ยใส่ถ้วยลาบหมูคักๆ กินอิ่มแล้วกะมานั่งล้อมวงเว้าพื้นความหลังกัน ลมหนาวพัดมาวี่ๆ นั่งผิงไฟใต้ถุนเรือน ฟังเสียงกบเสียงเขียดฮ้อง มีความสุขหลายตั๊วชีวิตบ้านเฮา",
+  isan_joke: "มื้อหนึ่งบักเซียงกับบักจ่อย ชวนกันไปหากินปลาอยู่ทุ่งนา ยามแลงแดดร่มลมตก บักเซียงกะว่า มึงเบิ่งพุ้น ปลามันเต้นด่องๆ อยู่ในหนองน้ำ พอพากันหย่างไปฮอด แทนที่สิเป็นปลา ดันเป็นบักกบโตใหญ่ตาโปโล บักจ่อยฟ้าวตะครุบปั๊บ ปรากฏว่ามื่นขี้ตม ล้มคะมำลงก้นจ้ำเบ้า บักเซียงกะหัวขวัญจนท้องคัดท้องแข็ง บักจ่อยลุกขึ้นมาหน้าเปื้อนขี้ตมเบิด บอกว่า อย่าหัวขวัญหลายสู กูจับบักกบได้แล้วนี่เด้ คักหลายพี่น้องเอ๊ย",
+  female_invite: "สวัสดีจ้าพ่อแม่พี่น้อง มื้อนี้สิพามาเที่ยวบ้านเฮาเด้อ อากาศยามเช้าดีหลาย หมอกลงจางๆ ทุ่งนาเขียวขจี ลมพัดเย็นสบาย มื้อนี้มีงานบุญบั้งไฟประจำปี เพิ่นจัดยิ่งใหญ่คัก มีขบวนแห่เซิ้งบั้งไฟ สาวงามฟ้อนรำนำหน้า หนุ่มๆ ตีกลองตุ้มม่วนซื่นโฮแซว ผู้เฒ่าผู้แก่กะพากันมาร่วมบุญฮอดวัด ขอเชิญชวนสุคนมาเที่ยวบ้านเฮาเด้อจ้า ยินดีต้อนรับสู่คนเด้อ",
+  short_greeting: "สวัสดีครับพี่น้อง มื้อนี้มาเว้าพื้นหนังให้ฟังเด้อสู แซ่บอีหลีตั๊วนี่"
+};
+
+// Quick Speaker Mapping to Engine & Voice
+const SPEAKER_MAP = {
+  clone_male_dang: { engine: "voice_clone", voice: "clone_male_dang" },
+  clone_female_wiri: { engine: "voice_clone", voice: "clone_female_wiri" },
+  clone_male_kasin: { engine: "voice_clone", voice: "clone_male_kasin" },
+  mms_nod_female: { engine: "meta_mms", voice: "mms_nod_female" },
+  th_f_2: { engine: "vachanatts", voice: "th_f_2" }
+};
 
 // Initialize on DOM load
 document.addEventListener("DOMContentLoaded", async () => {
@@ -22,8 +27,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Setup text counter
   const textarea = document.getElementById("input-text");
-  textarea.addEventListener("input", updateCharCount);
-  applyPreset(0);
+  if (textarea) {
+    textarea.addEventListener("input", updateCharCount);
+    // Default text
+    fillScript("dang_long");
+  }
 
   // Setup sliders
   setupSliders();
@@ -31,104 +39,218 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Load models from API
   await loadModels();
 
+  // Select default quick speaker (Dang Studio)
+  selectQuickSpeaker("clone_male_dang");
+
   // Load history
   await loadHistory();
 });
 
-function switchTab(tabId) {
-  const tabs = ['single', 'compare', 'guide'];
-  tabs.forEach(t => {
-    const view = document.getElementById(`view-${t}`);
-    const btn = document.getElementById(`tab-btn-${t}`);
-    if (t === tabId) {
-      view.classList.remove('hidden');
-      btn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
-      btn.classList.remove('bg-slate-800/80', 'text-slate-300');
-    } else {
-      view.classList.add('hidden');
-      btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/20');
-      btn.classList.add('bg-slate-800/80', 'text-slate-300');
-    }
+function selectQuickSpeaker(speakerKey) {
+  const mapping = SPEAKER_MAP[speakerKey];
+  if (!mapping) return;
+
+  currentEngine = mapping.engine;
+  currentVoice = mapping.voice;
+
+  // Highlight active quick speaker button
+  document.querySelectorAll(".quick-spk-btn").forEach(btn => {
+    btn.classList.remove(
+      "border-amber-500", "border-pink-500", "border-sky-500", "border-rose-500", "border-indigo-500",
+      "shadow-md", "shadow-amber-500/20", "bg-gradient-to-b", "from-amber-950/40"
+    );
+    btn.classList.add("border-slate-800", "bg-slate-950/70");
   });
 
-  // Hide or show presets card based on tab
-  const presetsCard = document.getElementById("presets-card");
-  if (tabId === 'guide') {
-    presetsCard.classList.add('hidden');
-  } else {
-    presetsCard.classList.remove('hidden');
+  const activeBtn = document.getElementById(`spk-${speakerKey}`);
+  if (activeBtn) {
+    activeBtn.classList.remove("border-slate-800", "bg-slate-950/70");
+    if (speakerKey === 'clone_male_dang') {
+      activeBtn.classList.add("border-amber-500", "bg-gradient-to-b", "from-amber-950/40", "shadow-md", "shadow-amber-500/10");
+    } else if (speakerKey === 'clone_female_wiri') {
+      activeBtn.classList.add("border-pink-500", "bg-slate-900", "shadow-md", "shadow-pink-500/10");
+    } else if (speakerKey === 'clone_male_kasin') {
+      activeBtn.classList.add("border-sky-500", "bg-slate-900", "shadow-md", "shadow-sky-500/10");
+    } else if (speakerKey === 'mms_nod_female') {
+      activeBtn.classList.add("border-rose-500", "bg-slate-900", "shadow-md", "shadow-rose-500/10");
+    } else {
+      activeBtn.classList.add("border-indigo-500", "bg-slate-900", "shadow-md", "shadow-indigo-500/10");
+    }
   }
 
-  if (window.lucide) lucide.createIcons();
+  // Sync advanced dropdowns if available
+  const engSelect = document.getElementById("select-engine-advanced");
+  if (engSelect) engSelect.value = currentEngine;
+  updateVoiceDropdown(currentEngine, currentVoice);
 }
 
-function applyPreset(index, btnElem = null) {
-  let text = "";
-  if (btnElem && btnElem.getAttribute("data-text")) {
-    text = btnElem.getAttribute("data-text");
-  } else if (PRESETS && PRESETS[index]) {
-    text = PRESETS[index];
-  } else if (btnElem) {
-    const p = btnElem.querySelector("p");
-    if (p) text = p.textContent.trim();
-  }
+function fillScript(scriptKey) {
+  const text = SCRIPTS[scriptKey];
+  if (!text) return;
 
-  if (!text) {
-    const btns = document.querySelectorAll(".preset-btn");
-    if (btns[index]) {
-      text = btns[index].getAttribute("data-text") || btns[index].querySelector("p")?.textContent.trim() || "";
-    }
-  }
-
-  const singleInput = document.getElementById("input-text");
-  const compareInput = document.getElementById("compare-text");
-  
-  if (singleInput && text) {
-    singleInput.value = text;
+  const input = document.getElementById("input-text");
+  if (input) {
+    input.value = text;
     updateCharCount();
-    // Visual flash feedback
-    singleInput.classList.add("ring-2", "ring-indigo-500");
-    setTimeout(() => singleInput.classList.remove("ring-2", "ring-indigo-500"), 400);
-  }
-  if (compareInput && text) {
-    compareInput.value = text;
+    // Visual flash
+    input.classList.add("ring-2", "ring-amber-500");
+    setTimeout(() => input.classList.remove("ring-2", "ring-amber-500"), 400);
   }
 
-  // Highlight active preset button
-  document.querySelectorAll(".preset-btn").forEach((b, i) => {
-    if (i === index || b === btnElem) {
-      b.classList.add("active-preset");
-    } else {
-      b.classList.remove("active-preset");
-    }
-  });
+  // Auto-switch speaker according to script
+  if (scriptKey === "dang_long" || scriptKey === "short_greeting" || scriptKey === "isan_joke") {
+    selectQuickSpeaker("clone_male_dang");
+  } else if (scriptKey === "female_invite") {
+    selectQuickSpeaker("clone_female_wiri");
+  } else if (scriptKey === "isan_eating") {
+    selectQuickSpeaker("clone_male_kasin");
+  }
+}
 
-  // Auto select dialect engine when regional presets are clicked
-  if (index === 6 && modelsData) { // Northern Thai
-    selectEngine('meta_mms');
-    const vs = document.getElementById("select-voice");
-    if (vs) vs.value = "mms_nod_female";
-  } else if (index === 7 && modelsData) { // Isan
-    selectEngine('isan_trained');
-    const vs = document.getElementById("select-voice");
-    if (vs) vs.value = "isan_female_trained";
-  } else if (index === 10 && modelsData) { // Dang Studio Clone
-    selectEngine('voice_clone');
-    const vs = document.getElementById("select-voice");
-    if (vs) vs.value = "clone_male_dang";
+function clearInputText() {
+  const input = document.getElementById("input-text");
+  if (input) {
+    input.value = "";
+    updateCharCount();
+    input.focus();
   }
 }
 
 function updateCharCount() {
-  const val = document.getElementById("input-text").value || "";
-  document.getElementById("char-counter").textContent = `${val.length} ตัวอักษร`;
+  const val = document.getElementById("input-text")?.value || "";
+  const el = document.getElementById("char-counter");
+  if (el) el.textContent = `${val.length} ตัวอักษร`;
+}
+
+function toggleAdvancedSettings() {
+  const panel = document.getElementById("advanced-settings-panel");
+  const txt = document.getElementById("advanced-toggle-text");
+  if (!panel) return;
+
+  if (panel.classList.contains("hidden")) {
+    panel.classList.remove("hidden");
+    if (txt) txt.textContent = "ซ่อนการตั้งค่า";
+  } else {
+    panel.classList.add("hidden");
+    if (txt) txt.textContent = "ตั้งค่าเสียงขั้นสูง";
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+function toggleCompareMode() {
+  const viewSingle = document.getElementById("view-single");
+  const viewCompare = document.getElementById("view-compare");
+  const label = document.getElementById("compare-toggle-label");
+
+  if (viewCompare.classList.contains("hidden")) {
+    viewCompare.classList.remove("hidden");
+    viewSingle.classList.add("hidden");
+    if (label) label.textContent = "กลับโหมดหลัก";
+  } else {
+    viewCompare.classList.add("hidden");
+    viewSingle.classList.remove("hidden");
+    if (label) label.textContent = "โหมดเทียบเสียง";
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+function onAdvancedEngineChange(engineId) {
+  currentEngine = engineId;
+  updateVoiceDropdown(engineId);
+}
+
+function updateVoiceDropdown(engineId, defaultVoiceId = null) {
+  if (!modelsData) return;
+  const engine = modelsData.engines.find(e => e.id === engineId);
+  const voiceSelect = document.getElementById("select-voice");
+  if (!engine || !voiceSelect) return;
+
+  voiceSelect.innerHTML = "";
+  engine.voices.forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v.id;
+    const genderBadge = v.gender === 'female' ? '👩 หญิง' : (v.gender === 'male' ? '👨 ชาย' : '🗣️ กลาง');
+    opt.textContent = `${v.name} [${genderBadge}]`;
+    if (defaultVoiceId && v.id === defaultVoiceId) {
+      opt.selected = true;
+    }
+    voiceSelect.appendChild(opt);
+  });
+
+  currentVoice = voiceSelect.value;
+  voiceSelect.onchange = () => {
+    currentVoice = voiceSelect.value;
+  };
+}
+
+function setupSliders() {
+  const speed = document.getElementById("param-speed");
+  const speedVal = document.getElementById("speed-val");
+  if (speed && speedVal) {
+    speed.addEventListener("input", (e) => {
+      speedVal.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+    });
+  }
+
+  const volume = document.getElementById("param-volume");
+  const volumeVal = document.getElementById("volume-val");
+  if (volume && volumeVal) {
+    volume.addEventListener("input", (e) => {
+      volumeVal.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+    });
+  }
+
+  const noise = document.getElementById("param-noise");
+  const noiseVal = document.getElementById("noise-val");
+  if (noise && noiseVal) {
+    noise.addEventListener("input", (e) => {
+      noiseVal.textContent = `${parseFloat(e.target.value).toFixed(3)}`;
+    });
+  }
+}
+
+async function loadModels() {
+  try {
+    const res = await fetch("/api/models");
+    modelsData = await res.json();
+    updateVoiceDropdown(currentEngine, currentVoice);
+  } catch (err) {
+    console.error("Failed to load models:", err);
+  }
+}
+
+async function autoTranslateToIsan() {
+  const textarea = document.getElementById("input-text");
+  const text = (textarea?.value || "").trim();
+  if (!text) {
+    alert("กรุณาพิมพ์ข้อความก่อน แล้วกดแปลงเป็นภาษาอีสานครับ");
+    return;
+  }
+  try {
+    const res = await fetch("/api/convert_isan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, gender: "male" })
+    });
+    if (!res.ok) throw new Error("ไม่สามารถแปลงข้อความเป็นภาษาอีสานได้");
+    const data = await res.json();
+    if (data.isan) {
+      textarea.value = data.isan;
+      updateCharCount();
+      selectQuickSpeaker("clone_male_dang");
+      textarea.classList.add("ring-2", "ring-amber-500");
+      setTimeout(() => textarea.classList.remove("ring-2", "ring-amber-500"), 500);
+    }
+  } catch (err) {
+    alert("เกิดข้อผิดพลาดในการแปลงข้อความ: " + err.message);
+  }
 }
 
 async function autoTranslateToKhamMueang() {
   const textarea = document.getElementById("input-text");
-  const text = (textarea.value || "").trim();
+  const text = (textarea?.value || "").trim();
   if (!text) {
-    alert("กรุณาพิมพ์หรือเลือกข้อความภาษาไทยก่อน แล้วกดแปลงเป็นคำเมืองครับ");
+    alert("กรุณาพิมพ์ข้อความก่อน แล้วกดแปลงเป็นคำเมืองครับ");
     return;
   }
   try {
@@ -142,11 +264,7 @@ async function autoTranslateToKhamMueang() {
     if (data.khammueang) {
       textarea.value = data.khammueang;
       updateCharCount();
-      // Auto select Northern Thai engine & female voice
-      selectEngine("meta_mms");
-      const vs = document.getElementById("select-voice");
-      if (vs) vs.value = "mms_nod_female";
-      // Visual flash feedback
+      selectQuickSpeaker("mms_nod_female");
       textarea.classList.add("ring-2", "ring-pink-500");
       setTimeout(() => textarea.classList.remove("ring-2", "ring-pink-500"), 500);
     }
@@ -155,161 +273,28 @@ async function autoTranslateToKhamMueang() {
   }
 }
 
-async function autoTranslateToIsan() {
-  const textarea = document.getElementById("input-text");
-  const text = (textarea.value || "").trim();
-  if (!text) {
-    alert("กรุณาพิมพ์หรือเลือกข้อความภาษาไทยก่อน แล้วกดแปลงเป็นภาษาอีสานครับ");
-    return;
-  }
-  const vs = document.getElementById("select-voice");
-  const currentVoice = vs ? vs.value : "";
-  const currentGender = (currentVoice && currentVoice.includes("male")) ? "male" : "female";
-
-  try {
-    const res = await fetch("/api/convert_isan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, gender: currentGender })
-    });
-    if (!res.ok) throw new Error("ไม่สามารถแปลงข้อความเป็นภาษาอีสานได้");
-    const data = await res.json();
-    if (data.isan) {
-      textarea.value = data.isan;
-      updateCharCount();
-      // Auto select YouTube-trained Isan engine & keep gender voice
-      selectEngine("isan_trained");
-      if (vs) {
-        vs.value = currentGender === "male" ? "isan_male_trained" : "isan_female_trained";
-      }
-      // Visual flash feedback
-      textarea.classList.add("ring-2", "ring-amber-500");
-      setTimeout(() => textarea.classList.remove("ring-2", "ring-amber-500"), 500);
-    }
-  } catch (err) {
-    alert("เกิดข้อผิดพลาดในการแปลงข้อความ: " + err.message);
-  }
-}
-
-function setupSliders() {
-  const speed = document.getElementById("param-speed");
-  const speedVal = document.getElementById("speed-val");
-  speed.addEventListener("input", (e) => {
-    speedVal.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
-  });
-
-  const volume = document.getElementById("param-volume");
-  const volumeVal = document.getElementById("volume-val");
-  volume.addEventListener("input", (e) => {
-    volumeVal.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
-  });
-
-  const noise = document.getElementById("param-noise");
-  const noiseVal = document.getElementById("noise-val");
-  noise.addEventListener("input", (e) => {
-    noiseVal.textContent = `${parseFloat(e.target.value).toFixed(3)}`;
-  });
-}
-
-function resetSliders() {
-  document.getElementById("param-speed").value = 1.0;
-  document.getElementById("speed-val").textContent = "1.0x";
-  document.getElementById("param-volume").value = 1.0;
-  document.getElementById("volume-val").textContent = "1.0x";
-  document.getElementById("param-noise").value = 0.667;
-  document.getElementById("noise-val").textContent = "0.667";
-}
-
-async function loadModels() {
-  try {
-    const res = await fetch("/api/models");
-    modelsData = await res.json();
-    renderEngineCards();
-    selectEngine(modelsData.engines[0].id);
-  } catch (err) {
-    console.error("Failed to load models:", err);
-  }
-}
-
-function renderEngineCards() {
-  const container = document.getElementById("engine-options");
-  container.innerHTML = "";
-
-  modelsData.engines.forEach(engine => {
-    const card = document.createElement("div");
-    card.id = `engine-card-${engine.id}`;
-    card.className = "engine-card p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all";
-    card.onclick = () => selectEngine(engine.id);
-
-    const badgeColor = engine.type === 'local' ? 'text-emerald-400 bg-emerald-950/60 border-emerald-800/40' : 'text-sky-400 bg-sky-950/60 border-sky-800/40';
-
-    card.innerHTML = `
-      <div class="flex items-start justify-between">
-        <div class="font-semibold text-xs text-white">${engine.name}</div>
-        <span class="text-[9px] px-2 py-0.5 rounded-full border ${badgeColor} uppercase tracking-wider">${engine.badge}</span>
-      </div>
-      <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">${engine.description}</p>
-    `;
-    container.appendChild(card);
-  });
-}
-
-function selectEngine(engineId) {
-  currentEngine = engineId;
-  const engine = modelsData.engines.find(e => e.id === engineId);
-  if (!engine) return;
-
-  // Highlight selected card
-  document.querySelectorAll(".engine-card").forEach(el => el.classList.remove("active"));
-  const activeCard = document.getElementById(`engine-card-${engineId}`);
-  if (activeCard) activeCard.classList.add("active");
-
-  // Populate voice dropdown
-  const voiceSelect = document.getElementById("select-voice");
-  voiceSelect.innerHTML = "";
-  engine.voices.forEach(v => {
-    const opt = document.createElement("option");
-    opt.value = v.id;
-    const genderBadge = v.gender === 'female' ? '👩 หญิง' : (v.gender === 'male' ? '👨 ชาย' : '🗣️ กลาง');
-    opt.textContent = `${v.name} [${genderBadge}]`;
-    voiceSelect.appendChild(opt);
-  });
-
-  document.getElementById("engine-desc").textContent = engine.description;
-
-  // Toggle controls visibility
-  const noiseContainer = document.getElementById("noise-scale-container");
-  if (engine.controls.noise_scale) {
-    noiseContainer.style.display = "block";
-  } else {
-    noiseContainer.style.display = "none";
-  }
-}
-
 async function startSingleSynthesis() {
   const text = document.getElementById("input-text").value.trim();
   if (!text) {
-    alert("กรุณากรอกข้อความภาษาไทยที่ต้องการสังเคราะห์");
+    alert("กรุณากรอกข้อความภาษาไทยหรืออีสานที่ต้องการสังเคราะห์");
     return;
   }
 
-  const voice = document.getElementById("select-voice").value;
-  const speed = parseFloat(document.getElementById("param-speed").value);
-  const volume = parseFloat(document.getElementById("param-volume").value);
-  const noiseScale = parseFloat(document.getElementById("param-noise").value);
+  const voiceSelect = document.getElementById("select-voice");
+  const voice = (voiceSelect && voiceSelect.value) ? voiceSelect.value : currentVoice;
+  const speed = parseFloat(document.getElementById("param-speed")?.value || 1.0);
+  const volume = parseFloat(document.getElementById("param-volume")?.value || 1.0);
+  const noiseScale = parseFloat(document.getElementById("param-noise")?.value || 0.667);
 
   const btn = document.getElementById("btn-synthesize");
   const emptyView = document.getElementById("player-empty");
   const loadingView = document.getElementById("player-loading");
   const activeView = document.getElementById("player-active");
-  const statusTag = document.getElementById("status-tag");
 
   btn.disabled = true;
-  emptyView.classList.add("hidden");
-  activeView.classList.add("hidden");
-  loadingView.classList.remove("hidden");
-  statusTag.textContent = "กำลังสร้างเสียง...";
-  statusTag.className = "text-xs px-2.5 py-1 rounded-full bg-indigo-950 text-indigo-400 font-medium animate-pulse";
+  if (emptyView) emptyView.classList.add("hidden");
+  if (activeView) activeView.classList.add("hidden");
+  if (loadingView) loadingView.classList.remove("hidden");
 
   try {
     const res = await fetch("/api/synthesize", {
@@ -323,7 +308,7 @@ async function startSingleSynthesis() {
         volume,
         noise_scale: noiseScale,
         auto_khammueang: voice.startsWith("mms_nod"),
-        auto_isan: voice.startsWith("mms_isan")
+        auto_isan: false
       })
     });
 
@@ -337,39 +322,123 @@ async function startSingleSynthesis() {
     await loadHistory();
   } catch (err) {
     alert(`ข้อผิดพลาด: ${err.message}`);
-    emptyView.classList.remove("hidden");
-    statusTag.textContent = "เกิดข้อผิดพลาด";
-    statusTag.className = "text-xs px-2.5 py-1 rounded-full bg-rose-950 text-rose-400 font-medium";
+    if (emptyView) emptyView.classList.remove("hidden");
   } finally {
     btn.disabled = false;
-    loadingView.classList.add("hidden");
+    if (loadingView) loadingView.classList.add("hidden");
   }
 }
 
 function displaySingleResult(data) {
   const activeView = document.getElementById("player-active");
-  const statusTag = document.getElementById("status-tag");
   const audioEl = document.getElementById("audio-element");
 
+  if (!activeView || !audioEl) return;
   activeView.classList.remove("hidden");
-  statusTag.textContent = "สำเร็จ";
-  statusTag.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 font-medium";
 
-  document.getElementById("res-model-badge").textContent = `${data.engine.toUpperCase()} • ${data.voice}`;
-  document.getElementById("res-latency").innerHTML = `<i data-lucide="zap" class="w-3 h-3 text-emerald-400"></i> ${data.latency_ms} ms`;
+  let voiceLabel = data.voice;
+  if (data.voice === "clone_male_dang") voiceLabel = "🤠 ด่าง สตูดิโอ (อีสานแท้)";
+  else if (data.voice === "clone_female_wiri") voiceLabel = "🌸 สาวอีสาน WiriWiri";
+  else if (data.voice === "clone_male_kasin") voiceLabel = "🌾 บ่าวอีสาน Kasin TV";
+  else if (data.voice.startsWith("mms_nod")) voiceLabel = "🌸 สาวเหนือ (คำเมือง)";
+  else if (data.voice === "th_f_2") voiceLabel = "🏛️ ไทยกลาง (Vachana)";
+
+  document.getElementById("res-model-badge").textContent = voiceLabel;
+  document.getElementById("res-latency").innerHTML = `<i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-400"></i> ${data.latency_ms} ms`;
   document.getElementById("res-text-preview").textContent = `"${data.text}"`;
-  document.getElementById("res-duration").textContent = `${data.duration} วินาที`;
+  document.getElementById("res-duration").textContent = `${data.duration}s`;
   document.getElementById("res-size").textContent = `${data.size_kb} KB`;
-  document.getElementById("res-time").textContent = data.timestamp;
 
   audioEl.src = data.audio_url;
-  audioEl.play().catch(() => {}); // Auto-play if allowed by browser
+  audioEl.play().catch(() => {});
 
   const dlBtn = document.getElementById("btn-download-audio");
-  dlBtn.href = data.audio_url;
-  dlBtn.download = data.filename;
+  if (dlBtn) {
+    dlBtn.href = data.audio_url;
+    dlBtn.download = data.filename;
+  }
 
   if (window.lucide) lucide.createIcons();
+}
+
+function playRealHumanAudio(audioUrl, title) {
+  const activeView = document.getElementById("player-active");
+  const emptyView = document.getElementById("player-empty");
+  const audioEl = document.getElementById("audio-element");
+
+  if (emptyView) emptyView.classList.add("hidden");
+  if (activeView) activeView.classList.remove("hidden");
+
+  document.getElementById("res-model-badge").textContent = "🎙️ ต้นฉบับคนพูดจริง YouTube";
+  document.getElementById("res-latency").innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> เสียงคนจริง 100%`;
+  document.getElementById("res-text-preview").textContent = title;
+  
+  audioEl.src = audioUrl;
+  audioEl.play().catch(() => {});
+
+  const dlBtn = document.getElementById("btn-download-audio");
+  if (dlBtn) {
+    dlBtn.href = audioUrl;
+    dlBtn.download = audioUrl.split("/").pop();
+  }
+
+  // Scroll smoothly to player
+  document.getElementById("player-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (window.lucide) lucide.createIcons();
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch("/api/history");
+    const data = await res.json();
+    const container = document.getElementById("history-list");
+    const countEl = document.getElementById("history-count");
+    if (!container) return;
+
+    if (!data.history || data.history.length === 0) {
+      container.innerHTML = `<p class="text-xs text-slate-600 text-center py-3">ยังไม่มีประวัติการสังเคราะห์</p>`;
+      if (countEl) countEl.textContent = "0 รายการ";
+      return;
+    }
+
+    if (countEl) countEl.textContent = `${data.history.length} รายการ`;
+    container.innerHTML = "";
+
+    data.history.slice(0, 8).forEach(item => {
+      const div = document.createElement("div");
+      div.className = "flex items-center justify-between p-2 rounded-lg bg-slate-950/70 border border-slate-800 hover:border-slate-700 text-xs gap-2 transition-all";
+      div.innerHTML = `
+        <div class="flex-1 truncate">
+          <span class="text-amber-400 font-semibold mr-1.5">[${item.voice}]</span>
+          <span class="text-slate-300">${item.text}</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-[10px] text-slate-500 font-mono">${item.timestamp}</span>
+          <button onclick="playHistoryItem('${item.audio_url}', '${item.text.replace(/'/g, "\\'")}')" class="p-1 text-slate-400 hover:text-amber-400 transition-colors" title="เล่นเสียง">
+            <i data-lucide="play" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+
+    if (window.lucide) lucide.createIcons();
+  } catch (err) {
+    console.error("Failed to load history:", err);
+  }
+}
+
+function playHistoryItem(url, text) {
+  const activeView = document.getElementById("player-active");
+  const emptyView = document.getElementById("player-empty");
+  const audioEl = document.getElementById("audio-element");
+
+  if (emptyView) emptyView.classList.add("hidden");
+  if (activeView) activeView.classList.remove("hidden");
+
+  document.getElementById("res-text-preview").textContent = `"${text}"`;
+  audioEl.src = url;
+  audioEl.play().catch(() => {});
 }
 
 async function startCompareAll() {
@@ -383,13 +452,12 @@ async function startCompareAll() {
   const container = document.getElementById("compare-results-container");
 
   btn.disabled = true;
-  btn.innerHTML = `<div class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> <span>กำลังสังเคราะห์ทุกโมเดลพร้อมกัน...</span>`;
+  btn.innerHTML = `<div class="w-4 h-4 border-2 border-slate-950/20 border-t-slate-950 rounded-full animate-spin"></div> <span>กำลังสังเคราะห์ทุกโมเดลพร้อมกัน...</span>`;
 
   container.innerHTML = `
-    <div class="col-span-full py-16 text-center space-y-3">
-      <div class="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
-      <p class="text-sm text-indigo-300 font-semibold animate-pulse">กำลังประมวลผลเสียงผ่าน 6 โมเดลชั้นนำ...</p>
-      <p class="text-xs text-slate-500">เปรียบเทียบ VachanaTTS, PyThaiTTS, Kokoro และ Edge Neural แบบขนาน</p>
+    <div class="col-span-full py-12 text-center space-y-3">
+      <div class="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mx-auto"></div>
+      <p class="text-sm text-amber-300 font-semibold animate-pulse">กำลังประมวลผลเสียงผ่านโมเดลชั้นนำ...</p>
     </div>
   `;
 
@@ -410,7 +478,7 @@ async function startCompareAll() {
     container.innerHTML = `<div class="col-span-full text-center text-rose-400 py-8">${err.message}</div>`;
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="zap" class="w-4 h-4 fill-white"></i> <span>⚡ สังเคราะห์เทียบทุกโมเดล (Compare All)</span>`;
+    btn.innerHTML = `<i data-lucide="zap" class="w-4 h-4 fill-slate-950"></i> <span>⚡ สังเคราะห์เทียบทุกโมเดล (Compare All)</span>`;
     if (window.lucide) lucide.createIcons();
   }
 }
@@ -418,7 +486,6 @@ async function startCompareAll() {
 function renderCompareResults(results) {
   const container = document.getElementById("compare-results-container");
   container.innerHTML = "";
-  activeAudios = [];
 
   results.forEach((item, idx) => {
     const card = document.createElement("div");
@@ -444,116 +511,24 @@ function renderCompareResults(results) {
             </span>
           </div>
 
-          <audio id="compare-audio-${idx}" controls class="w-full mt-2"></audio>
+          <audio id="compare-audio-${idx}" controls class="w-full mt-2 custom-audio-player"></audio>
 
           <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
             <span>ความยาว: <strong class="text-slate-200">${item.duration}s</strong></span>
             <span>ขนาด: <strong class="text-slate-200">${item.size_kb} KB</strong></span>
-            <a href="${item.audio_url}" download="${item.filename}" class="text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1">
-              <i data-lucide="download" class="w-3 h-3"></i> ดาวน์โหลด
-            </a>
           </div>
         </div>
       `;
     }
-
     container.appendChild(card);
 
     if (item.status !== "error") {
-      const audioEl = document.getElementById(`compare-audio-${idx}`);
-      audioEl.src = item.audio_url;
-      activeAudios.push(audioEl);
-
-      // Auto pause others when this audio plays
-      audioEl.addEventListener("play", () => {
-        activeAudios.forEach(other => {
-          if (other !== audioEl && !other.paused) {
-            other.pause();
-          }
-        });
-      });
+      setTimeout(() => {
+        const a = document.getElementById(`compare-audio-${idx}`);
+        if (a) a.src = item.audio_url;
+      }, 50);
     }
   });
 
   if (window.lucide) lucide.createIcons();
-}
-
-async function loadHistory() {
-  try {
-    const res = await fetch("/api/history");
-    const data = await res.json();
-    const list = document.getElementById("history-list");
-    const count = document.getElementById("history-count");
-
-    if (!data.history || data.history.length === 0) {
-      list.innerHTML = `<p class="text-xs text-slate-600 text-center py-4">ยังไม่มีประวัติการสังเคราะห์</p>`;
-      count.textContent = "0 รายการ";
-      return;
-    }
-
-    count.textContent = `${data.history.length} รายการ`;
-    list.innerHTML = "";
-
-    data.history.forEach(item => {
-      const row = document.createElement("div");
-      row.className = "p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/60 flex items-center justify-between gap-3 text-xs";
-      row.innerHTML = `
-        <div class="truncate flex-1">
-          <div class="flex items-center gap-1.5 font-medium text-slate-300">
-            <span class="text-indigo-400 font-mono text-[11px]">${item.engine}</span>
-            <span class="text-slate-500">•</span>
-            <span class="text-slate-400 text-[11px]">${item.voice}</span>
-            <span class="text-slate-600 text-[10px]">${item.timestamp}</span>
-          </div>
-          <p class="text-slate-400 truncate text-[11px] mt-0.5">"${item.text}"</p>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <button onclick="playHistoryAudio('${item.audio_url}')" class="p-1.5 rounded-md bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white transition-colors" title="เล่นเสียง">
-            <i data-lucide="play" class="w-3.5 h-3.5"></i>
-          </button>
-          <a href="${item.audio_url}" download="${item.filename}" class="p-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors" title="ดาวน์โหลด">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i>
-          </a>
-        </div>
-      `;
-      list.appendChild(row);
-    });
-
-    if (window.lucide) lucide.createIcons();
-  } catch (err) {
-    console.error("Failed to load history:", err);
-  }
-}
-
-function playHistoryAudio(url) {
-  const audio = new Audio(url);
-  audio.play().catch(e => console.error(e));
-}
-
-let activeHumanAudio = null;
-function playRealHumanAudio(url, title) {
-  const player = document.getElementById("audio-element");
-  const resultBox = document.getElementById("result-card");
-  const meta = document.getElementById("meta-engine");
-
-  if (activeHumanAudio) {
-    activeHumanAudio.pause();
-    activeHumanAudio = null;
-  }
-
-  if (player) {
-    player.src = url;
-    player.play().catch(e => console.error(e));
-    if (resultBox) resultBox.classList.remove("hidden");
-    const metaVoice = document.getElementById("meta-voice");
-    if (metaVoice) {
-      metaVoice.textContent = title;
-    }
-    if (meta) {
-      meta.textContent = "🎙️ เสียงคนอีสานแท้ 100% (YouTube)";
-    }
-  } else {
-    activeHumanAudio = new Audio(url);
-    activeHumanAudio.play().catch(e => console.error(e));
-  }
 }
