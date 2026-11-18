@@ -528,9 +528,9 @@ function playHistoryAudio(url) {
 
 let activeHumanAudio = null;
 function playRealHumanAudio(url, title) {
-  const player = document.getElementById("audio-player");
-  const resultBox = document.getElementById("result-box");
-  const meta = document.getElementById("audio-meta");
+  const player = document.getElementById("audio-element");
+  const resultBox = document.getElementById("result-card");
+  const meta = document.getElementById("meta-engine");
 
   if (activeHumanAudio) {
     activeHumanAudio.pause();
@@ -541,11 +541,12 @@ function playRealHumanAudio(url, title) {
     player.src = url;
     player.play().catch(e => console.error(e));
     if (resultBox) resultBox.classList.remove("hidden");
+    const metaVoice = document.getElementById("meta-voice");
+    if (metaVoice) {
+      metaVoice.textContent = title;
+    }
     if (meta) {
-      meta.innerHTML = `
-        <span class="text-amber-400 font-bold">🎙️ เสียงคนอีสานแท้ 100% (YouTube)</span> • 
-        <span class="text-slate-300">${title}</span>
-      `;
+      meta.textContent = "🎙️ เสียงคนอีสานแท้ 100% (YouTube)";
     }
   } else {
     activeHumanAudio = new Audio(url);
