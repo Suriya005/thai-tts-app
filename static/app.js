@@ -158,21 +158,26 @@ async function autoTranslateToIsan() {
     alert("กรุณาพิมพ์หรือเลือกข้อความภาษาไทยก่อน แล้วกดแปลงเป็นภาษาอีสานครับ");
     return;
   }
+  const vs = document.getElementById("select-voice");
+  const currentVoice = vs ? vs.value : "";
+  const currentGender = (currentVoice && currentVoice.includes("male")) ? "male" : "female";
+
   try {
     const res = await fetch("/api/convert_isan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, gender: "female" })
+      body: JSON.stringify({ text, gender: currentGender })
     });
     if (!res.ok) throw new Error("ไม่สามารถแปลงข้อความเป็นภาษาอีสานได้");
     const data = await res.json();
     if (data.isan) {
       textarea.value = data.isan;
       updateCharCount();
-      // Auto select YouTube-trained Isan engine & female voice
+      // Auto select YouTube-trained Isan engine & keep gender voice
       selectEngine("isan_trained");
-      const vs = document.getElementById("select-voice");
-      if (vs) vs.value = "isan_female_trained";
+      if (vs) {
+        vs.value = currentGender === "male" ? "isan_male_trained" : "isan_female_trained";
+      }
       // Visual flash feedback
       textarea.classList.add("ring-2", "ring-amber-500");
       setTimeout(() => textarea.classList.remove("ring-2", "ring-amber-500"), 500);

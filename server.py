@@ -80,10 +80,11 @@ def get_models():
                 "name": "🔥 โมเดลเสียงอีสานแท้ (เทรนจาก YouTube)",
                 "type": "local",
                 "badge": "YouTube Trained",
-                "description": "โมเดลเสียงภาษาอีสานแท้เทรนจากคลิปยูทูปคนอีสานจริง (สาวอีสาน: น้องครีม & WiriWiri, หนุ่มอีสาน: พี่หนุ่ย & ไทบ้าน) ชัดถ้อยชัดคำ ม่วนซื่นเป็นธรรมชาติ",
+                "description": "โมเดลเสียงภาษาอีสานแท้เทรนจากคลิปยูทูปคนอีสานจริง (สาวอีสาน: น้องครีม & WiriWiri, หนุ่มอีสาน: เสียงเป็นธรรมชาติสมจริง ไม่เป็นหุ่นยนต์ / บ่าวไทบ้าน) ชัดถ้อยชัดคำ ม่วนซื่นเป็นธรรมชาติ",
                 "voices": [
-                    {"id": "isan_female_trained", "name": "🌸 สาวอีสานแท้ (น้องครีม & WiriWiri)", "gender": "female"},
-                    {"id": "isan_male_trained", "name": "🌾 หนุ่มอีสานแท้ (พี่หนุ่ย & ไทบ้าน)", "gender": "male"}
+                    {"id": "isan_female_trained", "name": "🌸 สาวอีสานแท้ (น้องครีม & WiriWiri) [👩 หญิง]", "gender": "female"},
+                    {"id": "isan_male_trained", "name": "🤠 หนุ่มอีสานแท้ - เสียงเป็นธรรมชาติ สมจริง [👨 ชาย - แนะนำ]", "gender": "male"},
+                    {"id": "isan_male_acoustic", "name": "🌾 บ่าวไทบ้าน (Acoustic DSP Morphed) [👨 ชาย]", "gender": "male"}
                 ],
                 "controls": {"speed": True, "volume": True, "noise_scale": False}
             },

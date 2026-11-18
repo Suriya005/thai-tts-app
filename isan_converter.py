@@ -208,6 +208,12 @@ def to_isan(text: str, gender: str = "female") -> str:
             dst = dst.replace("ครับ", "จ้า")
         processed = processed.replace(src, dst)
 
+    # Clean existing cross-gender particles in input (e.g. Preset pasted 'เด้อจ้า' used with male voice)
+    if gender == "male":
+        processed = processed.replace("เด้อจ้า", "เด้อครับ").replace("เด้อค่ะ", "เด้อครับ").replace("จ้า", "ครับ").replace("ค่ะ", "ครับ")
+    elif gender == "female":
+        processed = processed.replace("เด้อครับ", "เด้อจ้า").replace("ครับ", "จ้า")
+
     # Phase 2: Word-level tokenization & mapping
     tokens = word_tokenize(processed, engine="newmm")
     out_tokens = []
