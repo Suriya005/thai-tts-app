@@ -76,6 +76,19 @@ def get_models():
     return {
         "engines": [
             {
+                "id": "voice_clone",
+                "name": "🎙️ โมเดลโคลนเสียงแท้ 100% (Zero-Shot Neural Voice Clone)",
+                "type": "local",
+                "badge": "True Voice Clone",
+                "description": "โมเดลโคลนเสียงพูดและสำเนียงจริง 100% จากคลิปต้นฉบับ (Reference Audio) ด้วยสถาปัตยกรรม Flow Matching Diffusion (F5-TTS) โคลนเนื้อเสียงจริง เส้นเสียง และสำเนียงอีสานของ ด่าง สตูดิโอ แบบสมบูรณ์แบบ",
+                "voices": [
+                    {"id": "clone_male_dang", "name": "🤠 ด่าง สตูดิโอ (โคลนเสียงและสำเนียงแท้ 100% - เว้าพื้นหนัง) [🔥 โคลนเสียงแท้]", "gender": "male"},
+                    {"id": "clone_female_wiri", "name": "🌸 สาวอีสาน WiriWiri (โคลนเสียงแท้ 100%) [👩 หญิง]", "gender": "female"},
+                    {"id": "clone_male_kasin", "name": "🌾 บ่าวอีสาน Kasin TV (โคลนเสียงแท้ 100%) [👨 ชาย]", "gender": "male"}
+                ],
+                "controls": {"speed": True, "volume": False, "noise_scale": False}
+            },
+            {
                 "id": "isan_trained",
                 "name": "🔥 โมเดลเสียงอีสานแท้ (เทรนจาก YouTube)",
                 "type": "local",
@@ -169,7 +182,17 @@ async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0
     out_filename = f"{engine}_{voice}_{file_id}.{out_ext}"
     out_path = OUTPUT_DIR / out_filename
 
-    if engine == "isan_trained":
+    if engine == "voice_clone":
+        import voice_clone_engine
+        await asyncio.to_thread(
+            voice_clone_engine.synthesize_cloned_voice,
+            voice_id=voice,
+            text=clean_text,
+            out_path=str(out_path),
+            speed=speed,
+            auto_isan=auto_isan or True
+        )
+    elif engine == "isan_trained":
         import isan_voice_engine
         import isan_converter
         target_gender = "female" if "female" in voice else "male"

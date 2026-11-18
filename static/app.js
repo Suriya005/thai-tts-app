@@ -112,6 +112,10 @@ function applyPreset(index, btnElem = null) {
     selectEngine('isan_trained');
     const vs = document.getElementById("select-voice");
     if (vs) vs.value = "isan_female_trained";
+  } else if (index === 10 && modelsData) { // Dang Studio Clone
+    selectEngine('voice_clone');
+    const vs = document.getElementById("select-voice");
+    if (vs) vs.value = "clone_male_dang";
   }
 }
 
