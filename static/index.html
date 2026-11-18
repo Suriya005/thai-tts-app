@@ -156,10 +156,18 @@
 
         <button onclick="applyPreset(7, this)" data-text="ยินดีต้อนรับเด้อจ้า สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อ" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-amber-500/50 transition-all group">
           <div class="flex items-center justify-between text-xs font-medium text-amber-300 group-hover:text-amber-200">
-            <span>🌾 ภาษาอีสาน (คำเว้าอีสาน)</span>
+            <span>🌸 สาวอีสานแท้ (WiriWiri)</span>
             <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
           </div>
           <p class="text-xs text-slate-400 truncate mt-1">ยินดีต้อนรับเด้อจ้า สบายดีบ่ มื้อนี้เป็นจังใด๋แหน่ แซ่บอีหลีเด้อ</p>
+        </button>
+
+        <button onclick="applyPreset(10, this)" data-text="สวัสดีครับพี่น้อง มื้อนี้พบกับด่างสตูดิโอ มาเว้าพื้นหนังให้ฟัง สบายดีบ่สู เป็นจั่งใด๋แหน่ แซ่บอีหลีตั๊วนี่" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-amber-950/40 hover:bg-amber-950/70 border border-amber-600/50 hover:border-amber-400 transition-all group">
+          <div class="flex items-center justify-between text-xs font-medium text-amber-300 group-hover:text-amber-100">
+            <span>🤠 หนุ่มอีสานแท้ (ด่าง สตูดิโอ)</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+          </div>
+          <p class="text-xs text-slate-300 truncate mt-1">สวัสดีครับพี่น้อง มื้อนี้พบกับด่างสตูดิโอ มาเว้าพื้นหนังให้ฟัง สบายดีบ่สู</p>
         </button>
 
         <button onclick="applyPreset(8, this)" data-text="สวัสดีพี่น้องชาวใต้ หรอยจังฮู้ วันนี้ไปทำไหรมามั่ง แหลงใต้ชัดเจน" class="preset-btn cursor-pointer text-left p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 hover:border-cyan-500/50 transition-all group">
@@ -228,13 +236,37 @@
                 <span class="text-base">🎙️</span>
                 <h3 class="text-sm font-bold text-amber-300">เสียงคนอีสานแท้ๆ 100% (เสียงคนพูดจริงจาก YouTube ไม่ใช่ AI)</h3>
               </div>
-              <span class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">คลิปเสียงคนจริง</span>
+              <span class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">คลิปเสียงคนจริง YouTube</span>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">
-              ฟังสำเนียง จังหวะจะโคน และลูกเอื้อนของคนอีสานแท้ๆ จากครีเอเตอร์ YouTube (Kasin TV & WiriWiri):
+              ฟังสำเนียง จังหวะจะโคน และลูกเอื้อนของคนอีสานแท้ๆ จากครีเอเตอร์ YouTube (ด่าง สตูดิโอ เว้าพื้นหนัง, Kasin TV & WiriWiri):
             </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <!-- Male Clips -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+              <!-- Dang Studio Clips -->
+              <div class="space-y-1.5 p-2.5 rounded-xl bg-slate-950/80 border border-amber-700/60 shadow-md">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-bold text-amber-300 flex items-center gap-1.5">
+                    <span>🎬</span> ด่าง สตูดิโอ (เว้าพื้นหนัง)
+                  </span>
+                  <span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">ต้นแบบ AI ชาย</span>
+                </div>
+                <div class="grid grid-cols-2 gap-1.5">
+                  <button type="button" onclick="playRealHumanAudio('/api/audio/real_human_isan/male/clip_dang_1.wav', 'ด่าง สตูดิโอ: เว้าพื้นหนัง (2.6s)')" class="px-2 py-1.5 rounded-lg bg-amber-950/70 hover:bg-amber-900 text-amber-200 border border-amber-700/50 flex items-center gap-1 text-[11px] transition-all">
+                    <span>▶️</span> เว้าพื้นหนัง (2.6s)
+                  </button>
+                  <button type="button" onclick="playRealHumanAudio('/api/audio/real_human_isan/male/clip_dang_2.wav', 'ด่าง สตูดิโอ: สำเนียงฉะฉาน (2.5s)')" class="px-2 py-1.5 rounded-lg bg-amber-950/70 hover:bg-amber-900 text-amber-200 border border-amber-700/50 flex items-center gap-1 text-[11px] transition-all">
+                    <span>▶️</span> สำเนียงฉะฉาน (2.5s)
+                  </button>
+                  <button type="button" onclick="playRealHumanAudio('/api/audio/real_human_isan/male/clip_dang_3.wav', 'ด่าง สตูดิโอ: ไม่ลากเสียง (2.2s)')" class="px-2 py-1.5 rounded-lg bg-amber-950/70 hover:bg-amber-900 text-amber-200 border border-amber-700/50 flex items-center gap-1 text-[11px] transition-all">
+                    <span>▶️</span> ไม่ลากเสียง (2.2s)
+                  </button>
+                  <button type="button" onclick="playRealHumanAudio('/api/audio/real_human_isan/male/clip_dang_4.wav', 'ด่าง สตูดิโอ: เล่าเรื่องมันส์ (3.7s)')" class="px-2 py-1.5 rounded-lg bg-amber-950/70 hover:bg-amber-900 text-amber-200 border border-amber-700/50 flex items-center gap-1 text-[11px] transition-all">
+                    <span>▶️</span> เล่าเรื่องมันส์ (3.7s)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Kasin TV Clips -->
               <div class="space-y-1.5 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
                 <span class="font-semibold text-sky-300 flex items-center gap-1.5 mb-1">
                   <span>🤠</span> บ่าวอีสาน (Kasin TV - ชาย)

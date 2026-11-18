@@ -131,9 +131,19 @@ if __name__ == "__main__":
     train_speaker_model(female_sources, "models/isan_female_voice.npz", gender="female")
 
     male_sources = [
+        "training_data/male/raw_dang_studio.wav",
         "training_data/male/raw_kasin.wav",
         "training_data/male/raw_taibaan.wav",
-        "training_data/male/raw_pnui.wav",
         "output/ref_male_isan.wav"
     ]
     train_speaker_model(male_sources, "models/isan_male_voice.npz", gender="male")
+
+    # Dedicated Authentic Dang Studio Model (เว้าพื้นหนัง พากย์อีสานแท้)
+    dang_sources = [
+        "training_data/male/raw_dang_studio.wav",
+        "output/real_human_isan/male/clip_dang_1.wav",
+        "output/real_human_isan/male/clip_dang_2.wav",
+        "output/real_human_isan/male/clip_dang_3.wav",
+        "output/real_human_isan/male/clip_dang_4.wav"
+    ]
+    train_speaker_model(dang_sources, "models/isan_male_dang.npz", gender="male")

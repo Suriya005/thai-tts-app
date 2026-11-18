@@ -80,10 +80,11 @@ def get_models():
                 "name": "🔥 โมเดลเสียงอีสานแท้ (เทรนจาก YouTube)",
                 "type": "local",
                 "badge": "YouTube Trained",
-                "description": "โมเดลเสียงภาษาอีสานแท้เทรนจากคลิปยูทูปคนอีสานจริง (หนุ่มอีสาน: Kasin TV & ไทบ้าน, สาวอีสาน: WiriWiri & น้องครีม) จังหวะกระชับ ฉะฉาน ไม่ลากเสียง ม่วนซื่นเป็นธรรมชาติ",
+                "description": "โมเดลเสียงภาษาอีสานแท้เทรนจากคลิปยูทูปคนอีสานจริง (หนุ่มอีสาน: ด่าง สตูดิโอ เว้าพื้นหนัง & Kasin TV, สาวอีสาน: WiriWiri & น้องครีม) จังหวะกระชับ ฉะฉาน ไม่ลากเสียง ม่วนซื่นเป็นธรรมชาติ",
                 "voices": [
-                    {"id": "isan_male_trained", "name": "🤠 หนุ่มอีสานแท้ (YouTube: Kasin TV & ไทบ้าน) [👨 ชาย - แนะนำ]", "gender": "male"},
-                    {"id": "isan_female_trained", "name": "🌸 สาวอีสานแท้ (YouTube: WiriWiri & น้องครีม) [👩 หญิง]", "gender": "female"},
+                    {"id": "isan_male_dang", "name": "🤠 หนุ่มอีสานแท้ (YouTube: ด่าง สตูดิโอ - เว้าพื้นหนัง) [👨 ชาย - แนะนำอันดับ 1]", "gender": "male"},
+                    {"id": "isan_female_trained", "name": "🌸 สาวอีสานแท้ (YouTube: WiriWiri & น้องครีม) [👩 หญิง - แนะนำ]", "gender": "female"},
+                    {"id": "isan_male_trained", "name": "🌾 บ่าวอีสาน (YouTube: Kasin TV & ไทบ้าน) [👨 ชาย]", "gender": "male"},
                     {"id": "isan_male_acoustic", "name": "🌾 บ่าวไทบ้าน (Acoustic DSP Morphed) [👨 ชาย]", "gender": "male"}
                 ],
                 "controls": {"speed": True, "volume": True, "noise_scale": False}
@@ -354,6 +355,10 @@ def get_audio(filename: str):
 def get_real_human_samples():
     return {
         "male": [
+            {"id": "m_dang1", "title": "เว้าพื้นหนังสุดมันส์ (คลิปแท้)", "speaker": "ด่าง สตูดิโอ (พากย์อีสาน)", "duration": "2.6s", "url": "/api/audio/real_human_isan/male/clip_dang_1.wav"},
+            {"id": "m_dang2", "title": "สำเนียงอีสานฉะฉานกระชับ", "speaker": "ด่าง สตูดิโอ (พากย์อีสาน)", "duration": "2.5s", "url": "/api/audio/real_human_isan/male/clip_dang_2.wav"},
+            {"id": "m_dang3", "title": "จังหวะพูดอีสานไม่ลากเสียง", "speaker": "ด่าง สตูดิโอ (พากย์อีสาน)", "duration": "2.2s", "url": "/api/audio/real_human_isan/male/clip_dang_3.wav"},
+            {"id": "m_dang4", "title": "เล่าเรื่องสไตล์ด่างสตูดิโอ", "speaker": "ด่าง สตูดิโอ (พากย์อีสาน)", "duration": "3.7s", "url": "/api/audio/real_human_isan/male/clip_dang_4.wav"},
             {"id": "m1", "title": "ทักทายภาษาอีสานแท้", "speaker": "Kasin TV (บ่าวอีสาน)", "duration": "2.4s", "url": "/api/audio/real_human_isan/male/clip_1.wav"},
             {"id": "m2", "title": "ถามไถ่สารทุกข์สุกดิบ", "speaker": "Kasin TV (บ่าวอีสาน)", "duration": "2.2s", "url": "/api/audio/real_human_isan/male/clip_2.wav"},
             {"id": "m3", "title": "ประโยคสนทนาภาษาอีสาน", "speaker": "Kasin TV (บ่าวอีสาน)", "duration": "5.6s", "url": "/api/audio/real_human_isan/male/clip_3.wav"},

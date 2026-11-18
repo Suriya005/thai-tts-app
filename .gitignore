@@ -21,6 +21,7 @@ training_data/
 tmp_*
 *.wav
 *.mp3
+!static/audio/real_human_isan/**
 
 # Model weights & large caches
 voices/
