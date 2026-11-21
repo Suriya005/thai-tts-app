@@ -141,6 +141,28 @@ DIALECT_CATALOG = {
         "script": "thai",
         "pitch_semitones": 4.0,
         "sample": "สวัสดีค่ะ ยินดีต้อนรับสู่ระบบสังเคราะห์เสียงภาษาไทย"
+    },
+    "mms_sou_female": {
+        "id": "mms_sou_female",
+        "name": "ภาษาใต้ (สำเนียงทองแดง - เสียงหญิง)",
+        "region": "Southern",
+        "gender": "female",
+        "badge": "Southern + Female DSP",
+        "repo": "facebook/mms-tts-tha",
+        "script": "thai",
+        "pitch_semitones": 4.2,
+        "sample": "ยินดีต้อนรับสู หรอยจังฮู้นิ วันนี้กินข้าวแล้วหม้ายนิ"
+    },
+    "mms_sou_male": {
+        "id": "mms_sou_male",
+        "name": "ภาษาใต้ (สำเนียงทองแดง - เสียงชาย)",
+        "region": "Southern",
+        "gender": "male",
+        "badge": "Southern Native",
+        "repo": "facebook/mms-tts-tha",
+        "script": "thai",
+        "pitch_semitones": 0.0,
+        "sample": "ยินดีต้อนรับสู หรอยจังฮู้คับ วันนี้กินข้าวแล้วหม้ายคับ"
     }
 }
 

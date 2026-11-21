@@ -4,6 +4,7 @@ import time
 import uuid
 import asyncio
 import traceback
+import hashlib
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 
@@ -24,6 +25,7 @@ STATIC_DIR.mkdir(parents=True, exist_ok=True)
 
 _pythaitts_models: Dict[str, Any] = {}
 _history: List[Dict[str, Any]] = []
+_audio_cache: Dict[str, Dict[str, Any]] = {}
 
 app = FastAPI(title="Thai TTS Benchmark & Testing Studio", version="1.0.0")
 
@@ -44,6 +46,8 @@ class SynthesizeRequest(BaseModel):
     noise_scale: float = 0.667
     auto_khammueang: Optional[bool] = False
     auto_isan: Optional[bool] = False
+    auto_southern: Optional[bool] = False
+    bypass_cache: Optional[bool] = False
 
 class ConvertRequest(BaseModel):
     text: str
@@ -114,7 +118,9 @@ def get_models():
                     {"id": "mms_isan_female", "name": "🌾 ภาษาอีสาน (สำเนียงลาว - เสียงหญิง)", "gender": "female"},
                     {"id": "mms_isan_male", "name": "🌾 ภาษาอีสาน (สำเนียงลาว - เสียงชาย)", "gender": "male"},
                     {"id": "mms_tha_female", "name": "🏛️ ภาษาไทยกลาง (MMS - เสียงหญิง)", "gender": "female"},
-                    {"id": "mms_tha_male", "name": "🏛️ ภาษาไทยกลาง (MMS - เสียงชาย)", "gender": "male"}
+                    {"id": "mms_tha_male", "name": "🏛️ ภาษาไทยกลาง (MMS - เสียงชาย)", "gender": "male"},
+                    {"id": "mms_sou_female", "name": "🌴 ภาษาใต้ (ทองแดง - เสียงหญิง)", "gender": "female"},
+                    {"id": "mms_sou_male", "name": "🌴 ภาษาใต้ (ทองแดง - เสียงชาย)", "gender": "male"}
                 ],
                 "controls": {"speed": True, "volume": False, "noise_scale": False}
             },
@@ -171,12 +177,25 @@ def get_models():
         ]
     }
 
-async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0, volume: float = 1.0, noise_scale: float = 0.667, auto_khammueang: bool = False, auto_isan: bool = False) -> Dict[str, Any]:
+async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0, volume: float = 1.0, noise_scale: float = 0.667, auto_khammueang: bool = False, auto_isan: bool = False, auto_southern: bool = False, bypass_cache: bool = False) -> Dict[str, Any]:
     file_id = str(uuid.uuid4())[:12]
     clean_text = text.strip()
     if not clean_text:
         raise ValueError("ข้อความว่างเปล่า กรุณากรอกข้อความภาษาไทย")
     
+    # ⚡ In-memory & disk audio cache optimizer (Engineered by Codex)
+    cache_key = hashlib.md5(f"{engine}:{voice}:{clean_text}:{speed}:{volume}:{noise_scale}:{auto_khammueang}:{auto_isan}:{auto_southern}".encode("utf-8")).hexdigest()
+    if not bypass_cache and cache_key in _audio_cache:
+        cached_entry = dict(_audio_cache[cache_key])
+        if (OUTPUT_DIR / cached_entry["filename"]).exists():
+            cached_entry["latency_ms"] = 2
+            cached_entry["cached"] = True
+            cached_entry["timestamp"] = time.strftime("%H:%M:%S")
+            _history.insert(0, cached_entry)
+            if len(_history) > 30:
+                _history.pop()
+            return cached_entry
+
     t0 = time.time()
     out_ext = "wav"
     out_filename = f"{engine}_{voice}_{file_id}.{out_ext}"
@@ -216,6 +235,10 @@ async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0
             import isan_converter
             target_gender = "female" if "female" in voice else "male"
             clean_text = isan_converter.to_isan(clean_text, gender=target_gender)
+        elif voice.startswith("mms_sou") and auto_southern:
+            import southern_converter
+            target_gender = "female" if "female" in voice else "male"
+            clean_text = southern_converter.to_southern(clean_text, gender=target_gender)
         await asyncio.to_thread(
             dialect_engine.synthesize_dialect,
             dialect_id=voice,
@@ -291,8 +314,11 @@ async def generate_speech(engine: str, voice: str, text: str, speed: float = 1.0
         "latency_ms": elapsed_ms,
         "duration": duration,
         "size_kb": file_size_kb,
-        "timestamp": time.strftime("%H:%M:%S")
+        "timestamp": time.strftime("%H:%M:%S"),
+        "cached": False
     }
+
+    _audio_cache[cache_key] = result
 
     _history.insert(0, result)
     if len(_history) > 30:
@@ -312,6 +338,12 @@ def api_convert_isan(req: ConvertRequest):
     converted = isan_converter.to_isan(req.text, gender=req.gender or "female")
     return {"original": req.text, "isan": converted}
 
+@app.post("/api/convert_southern")
+def api_convert_southern(req: ConvertRequest):
+    import southern_converter
+    converted = southern_converter.to_southern(req.text, gender=req.gender or "female")
+    return {"original": req.text, "southern": converted}
+
 @app.post("/api/synthesize")
 async def api_synthesize(req: SynthesizeRequest):
     try:
@@ -323,7 +355,9 @@ async def api_synthesize(req: SynthesizeRequest):
             volume=req.volume,
             noise_scale=req.noise_scale,
             auto_khammueang=req.auto_khammueang or False,
-            auto_isan=req.auto_isan or False
+            auto_isan=req.auto_isan or False,
+            auto_southern=req.auto_southern or False,
+            bypass_cache=req.bypass_cache or False
         )
         return res
     except Exception as e:
@@ -336,6 +370,7 @@ async def api_compare(req: CompareRequest):
         {"engine": "isan_trained", "voice": "isan_female_trained", "label": "🔥 สาวอีสานแท้ (เทรนจาก YouTube - หญิง)"},
         {"engine": "isan_trained", "voice": "isan_male_trained", "label": "🔥 หนุ่มอีสานแท้ (เทรนจาก YouTube - ชาย)"},
         {"engine": "meta_mms", "voice": "mms_nod_female", "label": "🌸 Meta MMS (คำเมือง เหนือ - หญิง)"},
+        {"engine": "meta_mms", "voice": "mms_sou_female", "label": "🌴 Meta MMS (ภาษาใต้ ทองแดง - หญิง)"},
         {"engine": "vachanatts", "voice": "th_f_2", "label": "VachanaTTS (หญิง 2 - สมดุล/CER ต่ำ)"},
         {"engine": "edge", "voice": "th-TH-PremwadeeNeural", "label": "Edge Neural (คุณเปรมวดี - หญิง)"},
         {"engine": "edge", "voice": "th-TH-NiwatNeural", "label": "Edge Neural (คุณนิวัฒน์ - ชาย)"}

@@ -86,7 +86,7 @@
         </div>
 
         <!-- Quick Speaker Choice Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5" id="quick-speakers">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5" id="quick-speakers">
           <!-- Dang Studio (Recommended) -->
           <button type="button" onclick="selectQuickSpeaker('clone_male_dang')" id="spk-clone_male_dang" class="quick-spk-btn active text-left p-3 rounded-xl border transition-all relative overflow-hidden bg-gradient-to-b from-amber-950/40 to-slate-900 border-amber-500/80 shadow-md shadow-amber-500/10">
             <div class="absolute top-1.5 right-1.5">
@@ -116,6 +116,13 @@
             <div class="text-2xl mb-1">🌸</div>
             <div class="text-xs font-bold text-rose-300">สาวเหนือ (คำเมือง)</div>
             <div class="text-[10px] text-slate-400 leading-tight mt-0.5">สำเนียงเจียงใหม่ล้านนา</div>
+          </button>
+
+          <!-- Southern Thai (ทองแดง) -->
+          <button type="button" onclick="selectQuickSpeaker('mms_sou_female')" id="spk-mms_sou_female" class="quick-spk-btn text-left p-3 rounded-xl border border-slate-800 hover:border-emerald-500/50 bg-slate-950/70 hover:bg-slate-900 transition-all">
+            <div class="text-2xl mb-1">🌴</div>
+            <div class="text-xs font-bold text-emerald-300">สาวใต้ (ทองแดง)</div>
+            <div class="text-[10px] text-slate-400 leading-tight mt-0.5">สำเนียงใต้แท้ หรอยแรง</div>
           </button>
 
           <!-- Central Thai Standard -->
@@ -188,6 +195,9 @@
             <button type="button" onclick="autoTranslateToKhamMueang()" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-pink-950/80 text-pink-300 border border-pink-700/60 hover:bg-pink-900 transition-all flex items-center gap-1.5" title="แปลงข้อความภาษากลางเป็นคำเมือง">
               <span>🪄 แปลงเป็นคำเมือง</span>
             </button>
+            <button type="button" onclick="autoTranslateToSouthern()" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 hover:bg-emerald-900 transition-all flex items-center gap-1.5" title="แปลงข้อความภาษากลางเป็นภาษาใต้">
+              <span>🪄 แปลงเป็นภาษาใต้</span>
+            </button>
             <button type="button" onclick="clearInputText()" class="text-xs text-slate-400 hover:text-rose-400 px-2 py-1 transition-colors">
               ล้างข้อความ
             </button>
@@ -212,6 +222,9 @@
             </button>
             <button type="button" onclick="fillScript('female_invite')" class="script-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center gap-1">
               <span>🌸</span> บทยาว: สาวอีสานชวนเที่ยว
+            </button>
+            <button type="button" onclick="fillScript('southern_food')" class="script-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950/60 hover:bg-emerald-900 text-emerald-200 border border-emerald-700/60 transition-all flex items-center gap-1">
+              <span>🌴</span> บทยาว: แหลงใต้ หรอยจังฮู้
             </button>
             <button type="button" onclick="fillScript('short_greeting')" class="script-pill px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-850 hover:bg-slate-800 text-slate-400 border border-slate-800 transition-all">
               💬 ทักทายอีสานสั้นๆ
@@ -265,6 +278,15 @@
             </div>
 
             <p id="res-text-preview" class="text-xs text-slate-300 italic bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60 leading-relaxed"></p>
+
+            <!-- Neon Audio Waveform Visualizer -->
+            <div class="relative w-full h-14 bg-slate-950 rounded-xl overflow-hidden border border-slate-800/80 my-2">
+              <canvas id="waveform-canvas" class="w-full h-full block"></canvas>
+              <div class="absolute bottom-1 right-2 text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>DSP Studio • Spacebar: เล่น/หยุด</span>
+              </div>
+            </div>
 
             <audio id="audio-element" controls autoplay class="w-full mt-2 custom-audio-player"></audio>
 

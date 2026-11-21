@@ -9,7 +9,8 @@ const SCRIPTS = {
   isan_eating: "สบายดีบ่พี่น้อง มื้อนี้เมื่อยนำงานหลาย มาเด้อมากินข้าวแลงนำกัน มื้อนี้มีตำบักหุ่งใส่ต่อนปลาร้าต้มสุก กลิ่นหอมหิ่นๆ กินกับผักบุ้งกะเพราลวก แล้วกะมีต้มไก่บ้านใส่ใบมะขามอ่อน ซดน้ำฮ้อนๆ แซ่บจนน้ำตาไหล ข้าวเหนียวฮ้อนๆ ปั้นตุ้ยคุ้ยใส่ถ้วยลาบหมูคักๆ กินอิ่มแล้วกะมานั่งล้อมวงเว้าพื้นความหลังกัน ลมหนาวพัดมาวี่ๆ นั่งผิงไฟใต้ถุนเรือน ฟังเสียงกบเสียงเขียดฮ้อง มีความสุขหลายตั๊วชีวิตบ้านเฮา",
   isan_joke: "มื้อหนึ่งบักเซียงกับบักจ่อย ชวนกันไปหากินปลาอยู่ทุ่งนา ยามแลงแดดร่มลมตก บักเซียงกะว่า มึงเบิ่งพุ้น ปลามันเต้นด่องๆ อยู่ในหนองน้ำ พอพากันหย่างไปฮอด แทนที่สิเป็นปลา ดันเป็นบักกบโตใหญ่ตาโปโล บักจ่อยฟ้าวตะครุบปั๊บ ปรากฏว่ามื่นขี้ตม ล้มคะมำลงก้นจ้ำเบ้า บักเซียงกะหัวขวัญจนท้องคัดท้องแข็ง บักจ่อยลุกขึ้นมาหน้าเปื้อนขี้ตมเบิด บอกว่า อย่าหัวขวัญหลายสู กูจับบักกบได้แล้วนี่เด้ คักหลายพี่น้องเอ๊ย",
   female_invite: "สวัสดีจ้าพ่อแม่พี่น้อง มื้อนี้สิพามาเที่ยวบ้านเฮาเด้อ อากาศยามเช้าดีหลาย หมอกลงจางๆ ทุ่งนาเขียวขจี ลมพัดเย็นสบาย มื้อนี้มีงานบุญบั้งไฟประจำปี เพิ่นจัดยิ่งใหญ่คัก มีขบวนแห่เซิ้งบั้งไฟ สาวงามฟ้อนรำนำหน้า หนุ่มๆ ตีกลองตุ้มม่วนซื่นโฮแซว ผู้เฒ่าผู้แก่กะพากันมาร่วมบุญฮอดวัด ขอเชิญชวนสุคนมาเที่ยวบ้านเฮาเด้อจ้า ยินดีต้อนรับสู่คนเด้อ",
-  short_greeting: "สวัสดีครับพี่น้อง มื้อนี้มาเว้าพื้นหนังให้ฟังเด้อสู แซ่บอีหลีตั๊วนี่"
+  short_greeting: "สวัสดีครับพี่น้อง มื้อนี้มาเว้าพื้นหนังให้ฟังเด้อสู แซ่บอีหลีตั๊วนี่",
+  southern_food: "สวัสดีสู วันนี้อากาศดีจังฮู้ นุ้ยจะพาไปกินข้าวแกงไตปลาที่หาดใหญ่ แหลงใต้ให้ฟังชาดหรอยแรง ลอกอกะมี ยานัดกะหวาน ได้แรงอกชาดสูเอ้ย วันนี้อย่ามัวแต่ขี้หก หลบบ้านไปกินข้าวกันตะ"
 };
 
 // Quick Speaker Mapping to Engine & Voice
@@ -18,6 +19,7 @@ const SPEAKER_MAP = {
   clone_female_wiri: { engine: "voice_clone", voice: "clone_female_wiri" },
   clone_male_kasin: { engine: "voice_clone", voice: "clone_male_kasin" },
   mms_nod_female: { engine: "meta_mms", voice: "mms_nod_female" },
+  mms_sou_female: { engine: "meta_mms", voice: "mms_sou_female" },
   th_f_2: { engine: "vachanatts", voice: "th_f_2" }
 };
 
@@ -44,6 +46,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Load history
   await loadHistory();
+
+  // Initialize Studio Waveform Visualizer & Hotkeys (Claude UI/UX)
+  initWaveformVisualizer();
+  setupKeyboardShortcuts();
 });
 
 function selectQuickSpeaker(speakerKey) {
@@ -56,7 +62,7 @@ function selectQuickSpeaker(speakerKey) {
   // Highlight active quick speaker button
   document.querySelectorAll(".quick-spk-btn").forEach(btn => {
     btn.classList.remove(
-      "border-amber-500", "border-pink-500", "border-sky-500", "border-rose-500", "border-indigo-500",
+      "border-amber-500", "border-pink-500", "border-sky-500", "border-rose-500", "border-emerald-500", "border-indigo-500",
       "shadow-md", "shadow-amber-500/20", "bg-gradient-to-b", "from-amber-950/40"
     );
     btn.classList.add("border-slate-800", "bg-slate-950/70");
@@ -73,6 +79,8 @@ function selectQuickSpeaker(speakerKey) {
       activeBtn.classList.add("border-sky-500", "bg-slate-900", "shadow-md", "shadow-sky-500/10");
     } else if (speakerKey === 'mms_nod_female') {
       activeBtn.classList.add("border-rose-500", "bg-slate-900", "shadow-md", "shadow-rose-500/10");
+    } else if (speakerKey === 'mms_sou_female') {
+      activeBtn.classList.add("border-emerald-500", "bg-slate-900", "shadow-md", "shadow-emerald-500/10");
     } else {
       activeBtn.classList.add("border-indigo-500", "bg-slate-900", "shadow-md", "shadow-indigo-500/10");
     }
@@ -104,6 +112,12 @@ function fillScript(scriptKey) {
     selectQuickSpeaker("clone_female_wiri");
   } else if (scriptKey === "isan_eating") {
     selectQuickSpeaker("clone_male_kasin");
+  } else if (scriptKey === "southern_food") {
+    currentEngine = "meta_mms";
+    currentVoice = "mms_sou_female";
+    const engSelect = document.getElementById("select-engine-advanced");
+    if (engSelect) engSelect.value = "meta_mms";
+    updateVoiceDropdown("meta_mms", "mms_sou_female");
   }
 }
 
@@ -267,6 +281,37 @@ async function autoTranslateToKhamMueang() {
       selectQuickSpeaker("mms_nod_female");
       textarea.classList.add("ring-2", "ring-pink-500");
       setTimeout(() => textarea.classList.remove("ring-2", "ring-pink-500"), 500);
+    }
+  } catch (err) {
+    alert("เกิดข้อผิดพลาดในการแปลงข้อความ: " + err.message);
+  }
+}
+
+async function autoTranslateToSouthern() {
+  const textarea = document.getElementById("input-text");
+  const text = (textarea?.value || "").trim();
+  if (!text) {
+    alert("กรุณาพิมพ์ข้อความก่อน แล้วกดแปลงเป็นภาษาใต้ครับ");
+    return;
+  }
+  try {
+    const res = await fetch("/api/convert_southern", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, gender: "female" })
+    });
+    if (!res.ok) throw new Error("ไม่สามารถแปลงข้อความเป็นภาษาใต้ได้");
+    const data = await res.json();
+    if (data.southern) {
+      textarea.value = data.southern;
+      updateCharCount();
+      currentEngine = "meta_mms";
+      currentVoice = "mms_sou_female";
+      const engSelect = document.getElementById("select-engine-advanced");
+      if (engSelect) engSelect.value = "meta_mms";
+      updateVoiceDropdown("meta_mms", "mms_sou_female");
+      textarea.classList.add("ring-2", "ring-emerald-500");
+      setTimeout(() => textarea.classList.remove("ring-2", "ring-emerald-500"), 500);
     }
   } catch (err) {
     alert("เกิดข้อผิดพลาดในการแปลงข้อความ: " + err.message);
@@ -531,4 +576,90 @@ function renderCompareResults(results) {
   });
 
   if (window.lucide) lucide.createIcons();
+}
+
+
+// 🎛️ Neon Web Audio API Waveform Visualizer & Hotkeys (Claude UI/UX Studio Suite)
+let _audioCtx = null;
+let _analyser = null;
+let _sourceNode = null;
+let _visRunning = false;
+
+function initWaveformVisualizer() {
+  const audioEl = document.getElementById("audio-element");
+  const canvas = document.getElementById("waveform-canvas");
+  if (!audioEl || !canvas) return;
+
+  function ensureAudioContext() {
+    if (!_audioCtx) {
+      const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+      _audioCtx = new AudioCtxClass();
+      _analyser = _audioCtx.createAnalyser();
+      _analyser.fftSize = 64;
+      try {
+        _sourceNode = _audioCtx.createMediaElementSource(audioEl);
+        _sourceNode.connect(_analyser);
+        _analyser.connect(_audioCtx.destination);
+      } catch (e) {}
+    }
+    if (_audioCtx.state === "suspended") {
+      _audioCtx.resume();
+    }
+  }
+
+  audioEl.addEventListener("play", () => {
+    ensureAudioContext();
+    if (!_visRunning) {
+      _visRunning = true;
+      drawWaveform();
+    }
+  });
+
+  audioEl.addEventListener("pause", () => { _visRunning = false; });
+  audioEl.addEventListener("ended", () => { _visRunning = false; });
+
+  function drawWaveform() {
+    if (!_visRunning) return;
+    requestAnimationFrame(drawWaveform);
+    const ctx = canvas.getContext("2d");
+    const width = (canvas.width = canvas.clientWidth || 300);
+    const height = (canvas.height = canvas.clientHeight || 56);
+    if (!_analyser) return;
+
+    const bufferLength = _analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    _analyser.getByteFrequencyData(dataArray);
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "rgba(2, 6, 23, 0.95)";
+    ctx.fillRect(0, 0, width, height);
+
+    const barWidth = Math.max(2, (width / bufferLength) * 1.8);
+    let x = 0;
+
+    for (let i = 0; i < bufferLength; i++) {
+      const barHeight = (dataArray[i] / 255) * height * 0.85;
+      const grad = ctx.createLinearGradient(0, height, 0, 0);
+      grad.addColorStop(0, "rgba(245, 158, 11, 0.4)");
+      grad.addColorStop(0.5, "rgba(16, 185, 129, 0.8)");
+      grad.addColorStop(1, "rgba(56, 189, 248, 1)");
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, height - barHeight, barWidth - 1.5, barHeight);
+      x += barWidth;
+    }
+  }
+}
+
+function setupKeyboardShortcuts() {
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && e.target.tagName !== "TEXTAREA" && e.target.tagName !== "INPUT") {
+      const audioEl = document.getElementById("audio-element");
+      if (audioEl && audioEl.src) {
+        e.preventDefault();
+        if (audioEl.paused) audioEl.play().catch(() => {});
+        else audioEl.pause();
+      }
+    }
+  });
 }
